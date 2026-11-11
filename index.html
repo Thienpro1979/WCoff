@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<title>Wyckoff VN - Phân tích cổ phiếu | © HOÀNG THÂN THIỆN</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Wyckoff VN">
+<meta name="theme-color" content="#0f1419"><link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#0f1419;--p:#171d25;--b:#2a3340;--t:#dfe6ee;--m:#8a97a6;--g:#26a669;--r:#e5534b;--y:#e3b341;--bl:#4c9aff}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--t);font:14px/1.45 "Segoe UI",Arial,sans-serif}
+body{display:flex;flex-direction:column}
+.top{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--p);border-bottom:1px solid var(--b);flex-wrap:wrap}
+.top h1{font-size:16px;margin:0 10px 0 0;color:var(--y)}
+input[type=text]{background:#0b0f14;border:1px solid var(--b);color:var(--t);padding:7px 10px;border-radius:6px;width:90px;text-transform:uppercase;font-weight:700}
+button{background:#232c37;border:1px solid var(--b);color:var(--t);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+button:hover{border-color:var(--bl)}button.pri{background:#1f5fbf;border-color:#2f74d8}button.grn{background:#1b7a4d;border-color:#26a669}
+button:disabled{opacity:.45;cursor:default}
+.main{flex:1;display:flex;min-height:0}
+.left{flex:1;display:flex;flex-direction:column;min-width:0}
+.tabs{display:flex;background:var(--p);border-bottom:1px solid var(--b)}
+.tab{padding:8px 16px;cursor:pointer;color:var(--m);border-bottom:2px solid transparent}
+.tab.on{color:var(--t);border-color:var(--bl)}
+.view{flex:1;position:relative;min-height:0}
+iframe,canvas{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b0f14}
+.view.fa canvas{display:none}.view.wy iframe{display:none}.view.split iframe{right:auto;width:50%}.view.split canvas{left:50%;width:50%}
+.story{border:1px solid #c0392b;border-radius:4px;padding:6px 8px;margin:6px 0;font-size:13px}
+.side{width:390px;overflow:auto;border-left:1px solid var(--b);background:var(--p);padding:10px}
+.card{background:#0f151c;border:1px solid var(--b);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.card h3{margin:0 0 6px;font-size:13px;color:var(--y);text-transform:uppercase;letter-spacing:.4px}
+.up{color:var(--g)}.dn{color:var(--r)}.ne{color:var(--y)}.mu{color:var(--m)}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:6px 0}
+.bar i{display:block}
+.sc{display:flex;align-items:center;gap:8px;margin:5px 0}.sc .n{width:110px}.sc .bg{flex:1;height:8px;background:#222b36;border-radius:4px}.sc .bg i{display:block;height:8px;border-radius:4px}
+.sig{border-left:4px solid var(--y)}.sig.buy{border-color:var(--g)}.sig.sell{border-color:var(--r)}
+ul{margin:4px 0 0 16px;padding:0}li{margin:2px 0}
+.warn{background:#3a2a10;border:1px solid #7a5a1c;color:#ffd48a;padding:6px 10px;border-radius:6px;margin-bottom:8px;font-size:12px}
+.foot{padding:5px 12px;background:var(--p);border-top:1px solid var(--b);font-size:12px;color:var(--m);display:flex;justify-content:space-between}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;background:#232c37;margin-right:4px;font-size:12px}
+#st{color:var(--m);font-size:12px}
+select{background:#0b0f14;border:1px solid var(--b);color:var(--t);padding:7px 6px;border-radius:6px;font-size:13px}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:50}.modal.off{display:none}
+.mbox{background:var(--p);border:1px solid var(--b);border-radius:10px;padding:16px 18px;width:390px}.mbox label{display:block;margin-top:8px;color:var(--m);font-size:12px}
+.mbox input[type=text]{width:100%;margin-top:3px;text-transform:none;font-weight:400}
+table.kp{width:100%;border-collapse:collapse;font-size:12px}table.kp th,table.kp td{border-bottom:1px solid var(--b);padding:3px 4px;text-align:right}table.kp th:first-child,table.kp td:first-child{text-align:left}table.kp tr.best td{color:var(--y);font-weight:700}
+
+canvas{touch-action:none}
+@media (max-width:860px){
+ html,body{height:auto;min-height:100%}body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+ .top{gap:6px;padding:8px}.top h1{width:100%;margin:0}
+ input[type=text],select,button{font-size:16px}button{padding:8px 11px}
+ #st{width:100%}
+ .main{flex-direction:column;min-height:0}
+ .left{flex:none;height:72vh;min-height:430px}
+ .side{width:100%;border-left:0;border-top:1px solid var(--b);overflow:visible}
+ .tab{padding:8px 11px;font-size:13px}
+ .mbox{width:92vw!important}
+ .foot{flex-direction:column;gap:2px}
+ #bZi,#bZo,#bZr,#bAll{display:none}
+}
+</style></head><body>
+<div class="top">
+ <h1>WYCKOFF VN</h1>
+ <input id="sym" type="text" value="VNM" maxlength="10" placeholder="Mã CP">
+ <select id="tf" title="Khung thời gian"><option value="1">1 phút</option><option value="5">5 phút</option><option value="15">15 phút</option><option value="30">30 phút</option><option value="60">1 giờ</option><option value="D" selected>Ngày</option><option value="W">Tuần</option><option value="M">Tháng</option></select>
+ <button class="pri" id="bLoad">Tải dữ liệu</button>
+ <button class="grn" id="bAna" disabled>Phân tích</button>
+ <button class="grn" id="bDraw" disabled>Vẽ biểu đồ Wyckoff</button>
+ <button class="pri" id="bQA">Hỏi đáp</button>
+ <button class="grn" id="bScan" title="Lọc cổ phiếu đang tích lũy ở Phase C">Lọc cổ phiếu</button>
+  <button id="bDemo" title="Chỉ để thử phần mềm, KHÔNG phải dữ liệu thật">Dữ liệu mẫu</button>
+ <button id="bZi" title="Phóng to biểu đồ">＋</button><button id="bZo" title="Thu nhỏ biểu đồ">－</button><button id="bZr" title="Về mặc định">⟲</button><button id="bAll" title="Xem toàn bộ lịch sử (nhiều năm)">Toàn cảnh</button>
+ <button id="bPng" title="Lưu biểu đồ Wyckoff thành ảnh">Lưu ảnh PNG</button>
+ <button id="bOpen">Mở FireAnt ngoài</button>
+ <button id="bCfg" title="Cài đặt kết nối dữ liệu">⚙ Cài đặt</button>
+ <span id="st"></span>
+</div>
+<div class="main">
+ <div class="left">
+  <div class="tabs"><div class="tab on" data-v="fa">Biểu đồ FireAnt</div><div class="tab" data-v="wy">Biểu đồ Wyckoff</div><div class="tab" data-v="split">Song song</div><div id="live" class="mu" style="margin-left:auto;padding:8px 14px;font-size:12px"></div></div>
+  <div class="view fa">
+   <iframe id="fa" src="https://fireant.vn/b/charts"></iframe>
+   <canvas id="cv"></canvas>
+  </div>
+ </div>
+ <div class="side" id="side"><div class="card"><h3>Hướng dẫn</h3>
+  <ol style="margin:0 0 0 18px;padding:0"><li>Nhập mã cổ phiếu → <b>Tải dữ liệu</b> (nến ngày hiện tại).</li><li>Bấm <b>Phân tích</b> để đánh giá theo Wyckoff.</li><li>Bấm <b>Vẽ biểu đồ Wyckoff</b> để kẻ hỗ trợ/kháng cự, chia Phase và vẽ đường đi 50 phiên tới.</li></ol>
+  <p class="mu">Công cụ hỗ trợ tham khảo, không phải khuyến nghị đầu tư. Xác suất là điểm số theo quy tắc, không phải cam kết.</p></div></div>
+</div>
+<div id="qa" class="modal off"><div class="mbox"><h3 style="margin:0 0 6px;color:var(--y)">Hỏi đáp - tư vấn vị thế</h3>
+ <p id="qaQ" style="margin:0 0 4px">Bạn mua cổ phiếu này giá bao nhiêu?</p>
+ <label>Giá mua (nghìn đồng, ví dụ 25.5)<input id="qaCost" type="text" placeholder="25.5"></label>
+ <label>Số lượng cổ phiếu (không bắt buộc)<input id="qaQty" type="text" placeholder="1000"></label>
+ <div style="margin-top:12px;display:flex;gap:8px"><button class="grn" id="qaOk">Tư vấn</button><button id="qaClr">Xóa vị thế</button><button id="qaX">Đóng</button></div></div></div>
+<div id="scan" class="modal off"><div class="mbox" style="width:560px;max-height:88vh;display:flex;flex-direction:column">
+ <h3 style="margin:0 0 6px;color:var(--y)">Lọc cổ phiếu: Tích lũy - Phase C</h3>
+ <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select id="scFloor"><option value="ALL">Tất cả sàn (HOSE+HNX+UPCOM)</option><option value="HOSE">HOSE</option><option value="HNX">HNX</option><option value="UPCOM">UPCOM</option></select>
+ <button class="grn" id="scGo">Bắt đầu lọc</button><button id="scStop" disabled>Dừng</button><button id="scX">Đóng</button></div>
+ <div id="scMsg" class="mu" style="margin:6px 0;font-size:12px">Quét nến ngày của toàn bộ mã VNDirect, giữ lại mã có cấu trúc Tích lũy đang ở Phase C (đã có Spring, chưa bứt phá). Mất vài phút.</div>
+ <div class="bar" style="background:#222b36"><i id="scBar" style="width:0;background:var(--g)"></i></div>
+ <h3 style="margin:8px 0 4px;font-size:13px;color:var(--y)">DANH SÁCH THEO DÕI <span id="scCnt" class="mu"></span> <button id="scClr" style="float:right;padding:2px 8px;font-size:11px">Xóa danh sách</button></h3>
+ <div id="scList" style="overflow:auto;flex:1;min-height:80px"></div></div></div>
+<div id="cfg" class="modal off"><div class="mbox"><h3 style="margin:0 0 6px;color:var(--y)">Cài đặt kết nối dữ liệu</h3>
+ <p class="mu" style="margin:0 0 4px;font-size:12px">Nếu iPhone báo "bị chặn truy cập nguồn dữ liệu (CORS)", hãy nhập địa chỉ Cloudflare Worker của bạn (xem HUONG_DAN_IPHONE.txt). Để trống = gọi trực tiếp.</p>
+ <label>Địa chỉ Worker<input id="cfgUrl" type="text" placeholder="https://wyckoff.ten-ban.workers.dev"></label>
+ <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="grn" id="cfgOk">Lưu</button><button id="cfgTest">Kiểm tra</button><button id="cfgX">Đóng</button></div>
+ <p id="cfgMsg" class="mu" style="font-size:12px"></p></div></div>
+<div class="foot"><span>© Bản quyền: HOÀNG THÂN THIỆN</span><span>Phương pháp: Wyckoff (Rubén Villahermosa) • Dữ liệu: VNDirect DChart</span></div>
+<script>
+// Cầu nối dữ liệu cho bản web/iPhone: thay thế phần Python (pywebview) bằng fetch trong trình duyệt.
+// Thử gọi trực tiếp nguồn dữ liệu; nếu bị chặn (CORS) thì đi qua Cloudflare Worker (cài đặt ⚙).
+(function(){
+ if(window.pywebview&&window.pywebview.api)return;
+ const H={dchart:'https://dchart-api.vndirect.com.vn/dchart/history',vps:'https://histdatafeed.vps.com.vn/tradingview/history',
+  quote:'https://bgapidatafeed.vps.com.vn/getliststockdata/',finfo:['https://api-finfo.vndirect.com.vn/v4/stocks','https://finfo-api.vndirect.com.vn/v4/stocks']};
+ const TFS={'1':6,'5':25,'15':50,'30':90,'60':200,'D':1500,'W':3800,'M':7600},MINB={M:12,W:30};
+ const proxy=()=>(localStorage.getItem('wy_proxy')||'').trim().replace(/\/$/,'');
+ let mode=localStorage.getItem('wy_mode')||'direct';           // direct | proxy
+ async function getJson(url,ms){
+  const one=async u=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||15000);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}};
+  const px=proxy(),via=()=>one(px+'/?u='+encodeURIComponent(url));
+  if(mode==='proxy'&&px)return via();
+  try{return await one(url)}catch(e){
+   if(!px)throw new Error('Trình duyệt bị chặn truy cập nguồn dữ liệu (CORS). Hãy vào ⚙ Cài đặt và nhập địa chỉ Cloudflare Worker.');
+   const j=await via();mode='proxy';try{localStorage.setItem('wy_mode','proxy')}catch(_){}return j}}
+ const udf=j=>{if(j.s!=='ok'||!j.t||!j.t.length)throw new Error('không có dữ liệu');return j.t.map((t,i)=>[t,j.o[i],j.h[i],j.l[i],j.c[i],j.v[i]])};
+ const clean=rows=>{const m=new Map();rows.forEach(r=>m.set(Math.floor(r[0]),r));return[...m.values()].sort((a,b)=>a[0]-b[0]).filter(r=>r.every(x=>x!=null)&&r[4]>0)};
+ const gapOk=(rows,tf)=>{if((tf!=='W'&&tf!=='M')||rows.length<3)return true;const g=[];for(let i=0;i<rows.length-1;i++)g.push(rows[i+1][0]-rows[i][0]);g.sort((a,b)=>a-b);return g[g.length>>1]>=(tf==='W'?5:25)*86400};
+ const srcs=[['VNDirect',(s,a,b,tf)=>getJson(H.dchart+'?resolution='+tf+'&symbol='+s+'&from='+a+'&to='+b).then(udf)],
+             ['VPS',(s,a,b,tf)=>getJson(H.vps+'?symbol='+s+'&resolution='+tf+'&from='+a+'&to='+b).then(udf)]];
+ const RES={W:['W','1W'],M:['M','1M']};
+ async function fetchRows(sym,a,b,tf,errs,minb){
+  for(const [n,f] of srcs)for(const r of (RES[tf]||[tf])){
+   try{const rows=clean(await f(sym,a,b,r));if(rows.length<minb)throw new Error('chỉ có '+rows.length+' nến');if(!gapOk(rows,tf))throw new Error('sai khung');return[n,rows]}catch(e){errs.push(n+': '+(e.message||e))}}
+  return[null,null]}
+ function aggregate(rows,tf){const B=new Map();
+  for(const r of rows){const d=new Date((r[0]+7*3600)*1000);let key;
+   if(tf==='M')key=d.getUTCFullYear()*100+d.getUTCMonth();
+   else{const t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));const dn=(t.getUTCDay()+6)%7;t.setUTCDate(t.getUTCDate()-dn+3);const y=t.getUTCFullYear(),f=new Date(Date.UTC(y,0,4));key=y*100+1+Math.round(((t-f)/864e5-3+((f.getUTCDay()+6)%7))/7)}
+   const b=B.get(key);if(!b)B.set(key,[r[0],r[1],r[2],r[3],r[4],r[5]||0]);else{b[2]=Math.max(b[2],r[2]);b[3]=Math.min(b[3],r[3]);b[4]=r[4];b[5]+=r[5]||0}}
+  return[...B.values()]}
+ const pack=(name,rows,tf)=>{const med=rows.map(r=>r[4]).sort((a,b)=>a-b)[rows.length>>1],k=med>1000?1000:1;
+  return JSON.stringify({s:'ok',src:name,tf,t:rows.map(r=>Math.floor(r[0])),o:rows.map(r=>r[1]/k),h:rows.map(r=>r[2]/k),l:rows.map(r=>r[3]/k),c:rows.map(r=>r[4]/k),v:rows.map(r=>r[5])})};
+ const okSym=s=>/^[A-Z0-9]{2,10}$/.test(s);
+ const api={
+  async history(sym,tf){sym=(sym||'').trim().toUpperCase();tf=TFS[tf]?tf:'D';if(!okSym(sym))return JSON.stringify({s:'error',err:'Mã không hợp lệ'});
+   const t1=Math.floor(Date.now()/1000)+86400,errs=[];let[n,rows]=await fetchRows(sym,t1-86400*TFS[tf],t1,tf,errs,MINB[tf]||80);
+   if(!rows&&(tf==='W'||tf==='M')){const[n2,d]=await fetchRows(sym,t1-86400*7600,t1,'D',errs,80);if(d){rows=aggregate(d,tf);n=n2+'+gộp';if(rows.length<MINB[tf]){rows=null}}}
+   return rows?pack(n,rows,tf):JSON.stringify({s:'error',err:errs.slice(-6).join(' | ')})},
+  async history_scan(sym){sym=(sym||'').trim().toUpperCase();if(!okSym(sym))return JSON.stringify({s:'error'});
+   const t1=Math.floor(Date.now()/1000)+86400,errs=[],[n,rows]=await fetchRows(sym,t1-86400*900,t1,'D',errs,120);return rows?pack(n,rows,'D'):JSON.stringify({s:'error',err:'không có dữ liệu'})},
+  async symbols(floor){const fl={HOSE:'HOSE',HNX:'HNX',UPCOM:'UPCOM'}[floor]||'HOSE,HNX,UPCOM',errs=[];
+   for(const u of H.finfo){try{const j=await getJson(u+'?q=type:STOCK,IFC~status:LISTED~floor:'+fl+'&fields=code,floor&size=3000',20000);
+     const out=[...new Set((j.data||[]).map(b=>b.code).filter(c=>/^[A-Z0-9]{3}$/.test(c||'')))].sort();if(out.length)return JSON.stringify({s:'ok',list:out});errs.push('danh sách rỗng')}catch(e){errs.push(e.message||String(e))}}
+   return JSON.stringify({s:'error',err:errs.join(' | ')})},
+  async quote(sym){sym=(sym||'').trim().toUpperCase();if(!okSym(sym))return JSON.stringify({s:'error'});
+   try{const j=await getJson(H.quote+sym,8000),r=Array.isArray(j)?j[0]:j,num=(...ks)=>{for(const k of ks){const v=parseFloat(String(r[k]).replace(/,/g,''));if(v>0)return v}return 0};
+    const p=num('lastPrice','last','c');if(p<=0)return JSON.stringify({s:'na'});return JSON.stringify({s:'ok',p,h:num('highPrice','hi','h'),l:num('lowPrice','lo','l'),o:num('openPrice','open','o')})}catch(e){return JSON.stringify({s:'error',err:String(e.message||e)})}},
+  async save_png(dataurl,sym){const a=document.createElement('a');a.href=dataurl;a.download='Wyckoff_'+(sym||'CP')+'.png';document.body.appendChild(a);a.click();a.remove();return 'tải xuống (xem trong Tệp/Ảnh)'},
+  async open_external(u){window.open(u,'_blank')}};
+ window.pywebview={api};
+})();
+
+</script>
+<script>
+//==ENGINE==
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const pct=(a,p)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.min(s.length-1,Math.floor(p*s.length))]};
+const sma=(D,k,i)=>avg(D.slice(Math.max(0,i-k+1),i+1).map(b=>b.c));
+const mirror=D=>D.map(b=>({t:b.t,o:-b.o,h:-b.l,l:-b.h,c:-b.c,v:b.v}));
+// Thông số theo khung thời gian (w = độ rộng tối đa của range); mọi ngưỡng giá khác co giãn theo w
+const TFPROF={'1':{w:0.035,cap:300,min:25},'5':{w:0.05,cap:300,min:25},'15':{w:0.07,cap:300,min:25},'30':{w:0.09,cap:300,min:25},'60':{w:0.12,cap:300,min:25},'D':{w:0.22,cap:520,min:30},'W':{w:0.30,cap:400,min:20},'M':{w:0.40,cap:200,min:12}};
+const TFNAME={'1':'1 PHÚT','5':'5 PHÚT','15':'15 PHÚT','30':'30 PHÚT','60':'1 GIỜ','D':'NGÀY','W':'TUẦN','M':'THÁNG'};
+let TFP={};
+function setTF(tf){const p=TFPROF[tf]||TFPROF.D,k=p.w/0.22;TFP={...p,zone:0.04*k,shallow:0.02*k,tol:0.015*k,pierce:0.003*k,prior:0.08*k}}
+setTF('D');
+
+function findRange(D){
+ const n=D.length,st=Math.max(2,Math.round(TFP.min/6)),eMax=Math.min(60,Math.floor(n/4));let top=null;
+ for(let e=0;e<=eMax;e+=3){
+  const end=n-e;let best=0;
+  for(let W=TFP.min;W<=Math.min(TFP.cap,end-1);W+=st){
+   const cs=D.slice(end-W,end).map(b=>b.c),m=avg(cs);
+   if((Math.max(...cs)-Math.min(...cs))/m<=TFP.w&&Math.abs(cs[cs.length-1]-cs[0])/m<TFP.w*0.45)best=W;
+   else if(best&&W>best+4*st)break;
+  }
+  if(best){const sc=best-0.5*e;if(!top||sc>top.sc)top={sc,s:end-best,e:end-1,W:best}}
+ }
+ return top;
+}
+// ===== VSA: phân loại nến theo ebook (biên độ, khối lượng, vị trí đóng cửa) =====
+function barInfo(D,i){
+ const b=D[i],p=D[i-1]||b,seg=D.slice(Math.max(0,i-20),i),sp=b.h-b.l,aS=avg(seg.map(x=>x.h-x.l))||sp||1e-9,aV=avg(seg.map(x=>x.v))||b.v||1;
+ const rs=sp/aS,rv=b.v/aV,loc=sp>0?(b.c-b.l)/sp:0.5;
+ return{up:b.c>p.c,rs,rv,loc,spread:rs>1.8?'vw':rs>1.25?'w':rs<0.7?'n':'m',vol:rv>2?'vh':rv>1.3?'h':rv<0.7?'l':'a',third:loc>=0.67?'top':loc<=0.33?'bot':'mid'}}
+function vsaTags(D,i){
+ const b=barInfo(D,i),t=[],hi=b.vol==='h'||b.vol==='vh',w=b.spread==='w'||b.spread==='vw',k=Math.max(0,i-10);
+ const hh=D[i].h>=Math.max(...D.slice(k,i).map(x=>x.h)),ll=D[i].l<=Math.min(...D.slice(k,i).map(x=>x.l));
+ if(!b.up&&hi&&b.spread!=='w'&&b.spread!=='vw'&&b.third==='bot')t.push('WeakA');
+ if(b.up&&b.vol==='l'&&b.spread==='n'&&b.third!=='top')t.push('NoDemand');
+ if(b.up&&hi&&b.spread==='n'&&b.third!=='top')t.push('WeakB');
+ if(hh&&w&&b.third==='bot'&&hi)t.push('Upthrust');
+ if(ll&&w&&b.third==='top'&&hi)t.push('ReverseUT');
+ if(!b.up&&b.spread==='n'&&b.vol==='l'&&b.third==='bot')t.push('NoSupply');
+ if(!b.up&&hi&&b.third==='top')t.push('StopVol');
+ if(ll&&b.vol==='l'&&b.third==='top')t.push('Test');
+ if(b.up&&hi&&b.spread==='m'&&b.third==='top')t.push('PowerA');
+ return t}
+const TAGN={WeakA:'Weakness A (nến giảm, KL cao, đóng cửa thấp)',NoDemand:'No Demand (nến tăng, KL thấp, biên độ hẹp)',WeakB:'Weakness B (nến tăng hẹp trên KL cao)',Upthrust:'Upthrust (vượt đỉnh rồi đóng cửa thấp, KL cao)',ReverseUT:'Reverse Upthrust (thủng đáy rồi đóng cửa cao, KL cao)',NoSupply:'No Supply / Lack of offer (nến giảm hẹp, KL thấp)',StopVol:'Stopping Volume (nến giảm KL cao, đóng cửa gần đỉnh nến)',Test:'Test (hạ giá nhanh, đóng cửa cao, KL thấp)',PowerA:'Power A (nến tăng, KL cao, đóng cửa gần đỉnh)'};
+// ===== Cung / Cầu: cạn hay còn =====
+function supplyDemand(D,A){
+ const N=D.length-1,L=12,res={sup:null,dem:null,ev:[]};
+ const tg=[];for(let i=Math.max(1,N-L+1);i<=N;i++)vsaTags(D,i).forEach(t=>tg.push({t,i}));
+ const has=x=>tg.filter(q=>x.includes(q.t)),d=(a,b)=>avg(D.slice(a,b).filter((x,i,ar)=>true).map(x=>x.v));
+ const dn=(a,b)=>{const v=[];for(let i=Math.max(1,a);i<=b;i++)if(D[i].c<D[i-1].c)v.push(D[i].v);return avg(v)},upv=(a,b)=>{const v=[];for(let i=Math.max(1,a);i<=b;i++)if(D[i].c>D[i-1].c)v.push(D[i].v);return avg(v)};
+ const dvr=(dn(N-9,N)||1)/(dn(N-40,N-10)||1),uvr=(upv(N-9,N)||1)/(upv(N-40,N-10)||1);
+ const sBull=has(['NoSupply','StopVol','Test','ReverseUT']),sBear=has(['WeakA','Upthrust']),dBear=has(['NoDemand','WeakB','Upthrust']),dBull=has(['PowerA','ReverseUT']);
+ let sup='neu',dem='neu';
+ if((sBull.length||dvr<0.75)&&sBear.length===0)sup='dry';else if(sBear.length||dvr>1.3)sup='more';
+ if((dBear.length||uvr<0.7)&&dBull.length===0)dem='dry';else if(dBull.length||uvr>1.3)dem='strong';
+ const ev=[];
+ sBull.slice(-3).forEach(q=>ev.push('Cung yếu đi ('+fmtD(D[q.i].t)+'): '+TAGN[q.t]));
+ sBear.slice(-2).forEach(q=>ev.push('Cung còn mạnh ('+fmtD(D[q.i].t)+'): '+TAGN[q.t]));
+ dBear.slice(-3).forEach(q=>ev.push('Cầu yếu đi ('+fmtD(D[q.i].t)+'): '+TAGN[q.t]));
+ dBull.slice(-2).forEach(q=>ev.push('Cầu mạnh lên ('+fmtD(D[q.i].t)+'): '+TAGN[q.t]));
+ ev.push('Khối lượng phiên giảm 10 gần nhất = '+dvr.toFixed(2)+'x trước đó; phiên tăng = '+uvr.toFixed(2)+'x.');
+ return{sup,dem,ev,dvr,uvr};
+}
+// ===== Sự kiện Wyckoff theo ebook (tích lũy; phân phối = chạy trên dữ liệu đảo dấu) =====
+function pivots(D,a,b,k,low){const o=[];for(let i=Math.max(a,k);i<=Math.min(b,D.length-1-k);i++){let ok=true;for(let j=1;j<=k;j++){if(low?(D[i].l>D[i-j].l||D[i].l>D[i+j].l):(D[i].h<D[i-j].h||D[i].h<D[i+j].h)){ok=false;break}}if(ok)o.push(i)}return o}
+function cluster(vals,tol,low){let best=null;for(const v of vals){const m=vals.filter(x=>Math.abs(x-v)/Math.abs(v)<=tol);if(!best||m.length>best.n||(m.length===best.n&&(low?v<best.v:v>best.v)))best={n:m.length,v,m}}
+ if(!best||best.n<2)return null;const m=[...best.m].sort((x,y)=>x-y);return m[Math.round((m.length-1)*(low?0.75:0.25))]}
+function detect(D,r,mode,noPre){
+ // Quy tắc Wyckoff chuẩn (tài liệu tác giả): tích lũy chạy trực tiếp; phân phối chạy trên dữ liệu ĐẢO DẤU (giá âm) nên mọi ngưỡng dùng up()/ab()
+ const{s,e}=r,N=D.length-1,seg=D.slice(s,e+1),W=seg.length,dist=mode==='dist',ab=Math.abs,up=(v,f)=>v+ab(v)*f;
+ const vAvg=avg(D.slice(Math.max(0,s-30),e+1).map(b=>b.v))||1,RW=5;
+ const ev=[];
+ // ---- PHA A ----
+ // SC/BC: nến climax (KL>=1.3x, biên độ rộng, đáy cục bộ, sát đáy thấp nhất giai đoạn đầu). Không có nến đạt chuẩn -> "SC?"
+ const c0=noPre?Math.max(1,s):Math.max(1,s-25),c1=Math.min(N-5,s+Math.floor(W*0.3));let wmin=Infinity;for(let i=c0;i<=c1;i++)wmin=Math.min(wmin,D[i].l);
+ let sc=-1,bestSc=0;
+ for(let i=c0;i<=c1;i++){const q=barInfo(D,i);if(q.rv<1.3)continue;
+  const lo8=Math.min(...D.slice(Math.max(0,i-8),Math.min(N,i+8)+1).map(x=>x.l));if(D[i].l>up(lo8,0.0001)||D[i].l>up(wmin,TFP.zone))continue;
+  const sco=q.rv*Math.max(0.6,q.rs)*(1+0.3*q.loc);if(sco>bestSc){bestSc=sco;sc=i}}
+ const scWeak=sc<0;
+ if(scWeak){const a0=Math.max(0,s-8),a1=s+Math.floor(W*0.4);sc=a0;for(let i=a0;i<=a1;i++)if(D[i].l<D[sc].l)sc=i}
+ const sb=barInfo(D,sc);ev.push({k:'SC',i:sc,weak:scWeak,wide:sb.spread==='w'||sb.spread==='vw',rv:sb.rv,closeUp:sb.loc>=0.5});
+ // PS: nhịp dừng đầu tiên TRƯỚC SC: KL cao, biên độ rộng/đóng cửa nửa trên, sau đó giá còn giảm tiếp
+ let ps=-1;for(const i of pivots(D,Math.max(2,sc-30),sc-3,2,true)){const q=barInfo(D,i);if(q.rv>=1.4&&q.loc>=0.5)ps=i}
+ if(ps>=0)ev.push({k:'PS',i:ps});
+ // AR: đỉnh hồi mạnh trong 20 phiên sau SC -> đường kháng cự trên (Creek)
+ let ar=Math.min(N,sc+1);for(let i=sc+1;i<=Math.min(N,sc+20);i++)if(D[i].h>D[ar].h)ar=i;
+ if(ar>sc)ev.push({k:'AR',i:ar});
+ // ST: quay lại vùng đáy SC, nến hẹp hơn, KL thấp hơn nhiều so với SC (bắt buộc)
+ const pl=pivots(D,ar+1,N-3,3,true),scLow=D[sc].l,sts=[];
+ for(const i of pl){if(i>ar+2&&ab(D[i].l-scLow)/ab(scLow)<=TFP.zone*0.6&&D[i].v<D[sc].v&&sts.length<3)sts.push({i,ok:D[i].l>=up(scLow,-0.002)&&D[i].v<D[sc].v*0.8,under:D[i].l<up(scLow,-0.005)})}
+ const secondary=sts.length===0;
+ let sup=secondary?(cluster(pl.map(i=>D[i].l),TFP.tol,true)??pct(seg.map(b=>b.l),0.10)):scLow;
+ const ph=pivots(D,s,Math.min(e,N-3),3,false),cr=cluster(ph.map(i=>D[i].h),TFP.tol*1.3,false),res=(cr!=null&&cr>=up(D[ar].h,-0.03))?cr:D[ar].h;
+ // ---- PHA C: Spring / UTAD (Quy tắc 3): thủng biên rồi quay lại khung giá trong 1-5 phiên; chạy thẳng = breakout thật (KHÔNG dán nhãn) ----
+ const eps=[];let pend=false,realBreak=false;
+ for(let i=Math.max(ar+3,sc+4);i<=N;i++){
+  if(D[i].l<up(sup,-TFP.pierce)){
+   let rec=false;for(let j=i;j<=Math.min(N,i+RW);j++)if(D[j].c>=sup){rec=true;break}
+   const last=eps[eps.length-1];
+   if(rec){if(last&&i-last.end<=3){last.end=i;if(D[i].l<D[last.i].l)last.i=i}else eps.push({i,end:i})}
+   else if(i>=N-RW)pend=true;
+   else realBreak=true;
+  }
+ }
+ const spE=eps.length?eps[eps.length-1]:null,sp=spE?spE.i:-1;
+ // các lần thủng biên trước đó: tích lũy = ST (thủng); phân phối = UT (Pha B)
+ for(let k=sts.length-1;k>=0;k--)if(!sts[k].pierce&&eps.some(q=>sts[k].i>=q.i-3&&sts[k].i<=q.end+3))sts.splice(k,1);
+ for(const q of eps.slice(0,-1))if(sts.length<5)sts.push({i:q.i,ok:false,under:true,pierce:true});
+ for(let k=sts.length-1;k>=0;k--)if(sp>=0&&!sts[k].pierce&&ab(sts[k].i-sp)<=3)sts.splice(k,1);
+ sts.sort((x,y)=>x.i-y.i).forEach(q=>ev.push({k:(q.pierce&&dist)?'UT':((sp>=0&&q.i>sp&&!q.pierce)?'RETEST':'ST'),i:q.i,ok:q.ok,under:q.under,pierce:!!q.pierce}));
+ let failed=false,spType=0,spWeak=false;
+ if(sp>=0){
+  const dv=[];for(let i=s;i<sp;i++)if(D[i].c<D[i].o)dv.push(D[i].v);
+  const base=dist?vAvg:(avg(dv)||vAvg),vmax=Math.max(...D.slice(spE.i,spE.end+1).map(b=>b.v)),vr=vmax/base,depth=(sup-D[sp].l)/ab(sup);
+  const back=(D[sp].c-D[sp].l)/((sup-D[sp].l)||1e-9);
+  if(!dist)spType=(vr<1&&depth<=TFP.shallow)?3:(vr>=2?1:2);
+  else spType=(vr>=1.5&&back>=0.5)?3:2;
+  ev.push({k:'SP',i:sp,type:spType,vr,depth});
+  const nx=D[sp+1];if(!dist&&spType===1&&nx&&nx.c<=up(sup,0.002)&&nx.v<=0.5*D[sp].v)spWeak=true;
+  // Test: nhịp chỉnh nhẹ sau Spring, biên độ cực hẹp, KL cạn kiệt (thấp hơn Spring và thấp hơn trung bình), đáy không thấp hơn Spring
+  for(let i=sp+2;i<=Math.min(N,sp+20);i++){const q=barInfo(D,i);
+   if(D[i].l>=up(D[sp].l,-0.005)&&D[i].l<=up(sup,TFP.zone*2)&&D[i].v<Math.min(D[sp].v,vAvg)&&q.rs<=1.05){ev.push({k:'TEST',i,ok:true});break}}
+  if(D.slice(sp+1).some(b=>b.c<up(D[sp].l,-0.01)))failed=true;
+ }
+ // ---- PHA B (tích lũy): UA = vượt đỉnh AR rồi quay lại khung giá (rút râu trên) ----
+ const uaSkip=new Set();
+ if(!dist){let n=0;const lim=sp>=0?sp:N+1;
+  for(let i=ar+3;i<=N&&i<lim&&n<2;i++){
+   if(D[i].h>up(res,TFP.pierce)){let back=-1;for(let j=i;j<=Math.min(N,i+RW);j++)if(D[j].c<=res){back=j;break}
+    if(back<0)break;
+    let pk=i;for(let j=i;j<=back;j++)if(D[j].h>D[pk].h)pk=j;
+    ev.push({k:'UA',i:pk});for(let j=i;j<=back;j++)uaSkip.add(j);n++;i=back}}}
+ // ---- PHA D ----
+ // JAC (tích lũy) / SOW thủng đáy Ice (phân phối - dữ liệu đảo): nến mạnh đóng cửa vượt kháng cự, KL bùng nổ
+ const bk=dist?'SOS':'JAC',inK=dist?'MSOS':'SOS',from=Math.max(ar+3,sp>=0?sp+1:0);
+ let jac=-1,sos=-1;
+ if(!failed)for(let i=from;i<=N;i++){if(uaSkip.has(i))continue;const q=barInfo(D,i);if(D[i].c>up(res,TFP.pierce)&&q.rv>=1.3&&(q.up||D[i].c>D[i].o)&&q.loc>=0.5&&q.rs>=1.0){jac=i;break}}
+ // SOS (trong range; phân phối = SOW trong range): nến tăng mạnh thân dài, đóng cửa gần đỉnh nến, trên giữa range, KL tăng tiến.
+ // Chuỗi chuẩn SOS -> LPS -> JAC: chọn SOS đầu tiên có nhịp LPS hợp lệ theo sau; nếu không có LPS thì lấy SOS mạnh nhất.
+ let lps=-1,bu=-1;
+ const prevLow=sp>=0?D[sp].l:sup,hiL=jac>=0?jac-1:N;
+ const findLps=so=>{let best=-1;for(let i=so+2;i<=hiL;i++){const q=barInfo(D,i);
+   // Quy tắc 2: đáy cao hơn đáy trước, nằm DƯỚI kháng cự cũ, KL rất thấp; chọn đáy thấp nhất của nhịp chỉnh
+   if(D[i].l>prevLow&&D[i].l>=sup&&D[i].h<=up(res,TFP.tol)&&D[i].v<D[so].v*0.7&&q.rv<1.0&&D[i].c<D[so].c*1.02&&(best<0||D[i].l<D[best].l))best=i}return best};
+ if(!failed){const mid=(sup+res)/2,cand=[];
+  for(let i=from;i<=hiL;i++){if(i<3)continue;const q=barInfo(D,i);
+   if(q.up&&q.rs>=1.1&&q.loc>=0.55&&q.rv>=1.1&&D[i].c>mid&&D[i].c<=up(res,0.005)){
+    const v3=avg(D.slice(i-2,i+1).map(x=>x.v)),p3=avg(D.slice(Math.max(0,i-5),i-2).map(x=>x.v));
+    if(v3>=p3)cand.push({i,sco:q.rv*q.loc})}}
+  if(cand.length){
+   if(!dist){const w=cand.find(c=>findLps(c.i)>=0);if(w){sos=w.i;lps=findLps(w.i)}}
+   if(sos<0)sos=cand.reduce((x,y)=>y.sco>x.sco?y:x).i}}
+ if(sos>=0)ev.push({k:inK,i:sos});
+ if(!failed&&!dist&&jac>=0){
+  // BU/BUEC (Pha E): nhịp điều chỉnh nằm TRÊN kháng cự cũ (nay là hỗ trợ), KL thấp khi retest
+  for(let i=jac+2;i<=N;i++){const a=Math.max(0,i-1),b=Math.min(N,i+1);if(D[i].l>Math.min(...D.slice(a,b+1).map(x=>x.l)))continue;
+   if(D[i].l>=up(res,-TFP.tol)&&D[i].l<=up(res,TFP.zone)&&D[i].v<D[jac].v*0.6&&(bu<0||ab(D[i].l-res)<ab(D[bu].l-res)))bu=i}
+ }
+ if(!failed&&dist&&jac<0){/* phân phối: SOW = key 'SOS' (jac) */}
+ let sowI=dist?jac:-1;
+ if(dist&&sowI>=0){
+  // LPSY: sau SOW, nhịp hồi yếu quanh Ice vừa bị thủng (Quy tắc 2), KL cạn kiệt, nến hẹp
+  for(let i=sowI+2;i<=Math.min(N,sowI+30);i++){const a=Math.max(0,i-1),b=Math.min(N,i+1);if(D[i].l>Math.min(...D.slice(a,b+1).map(x=>x.l)))continue;
+   const q=barInfo(D,i);
+   if(ab(D[i].l-res)/ab(res)<=TFP.zone*1.5&&D[i].c<D[sowI].c&&D[i].v<D[sowI].v*0.7&&q.rv<1.0){lps=i;break}}
+ }
+ if(jac>=0)ev.push({k:bk,i:jac});
+ if(lps>0)ev.push({k:'LPS',i:lps});
+ if(bu>0)ev.push({k:'BU',i:bu});
+ // Breakout THẤT BẠI: sau JAC/SOW giá đóng cửa quay lại dưới đáy LPS/BU và dưới kháng cự cũ
+ let failedBreak=false,holdLvl=null;
+ if(jac>=0){const hs=ev.filter(q=>q.k==='LPS'||q.k==='BU').map(q=>D[q.i].l);holdLvl=hs.length?Math.min(...hs):up(res,-TFP.zone*0.5);failedBreak=D[N].c<up(holdLvl,-TFP.pierce)&&D[N].c<up(res,-TFP.tol)}
+ const held=jac>=0&&D[N].c>=up(res,-TFP.tol);
+ return{sup,res,ev,vAvg,pend,failed,secondary,spType,spWeak,failedBreak,holdLvl,realBreak,held,hasUA:ev.some(q=>q.k==='UA')};
+}
+// Chia Phase theo tài liệu: A = PS/SC -> AR -> ST | B = UA + ST trong B | C = Spring/UTAD + Test | D = SOS -> LPS -> JAC (phân phối: SOW -> LPSY) | E = BU/BUEC sau JAC (phân phối: markdown)
+function makePhases(ev,N,D,mode,held,rg){
+ const dist=mode==='dist',g=k=>{const x=ev.find(y=>y.k===k);return x?x.i:null};
+ const sc=g('SC'),ps=g('PS'),ar=g('AR'),sp=g('SP'),lps=g('LPS'),te=g('TEST');
+ const sosIn=g(dist?'MSOS':'SOS'),brk=g(dist?'SOS':'JAC');
+ const st=ev.filter(x=>x.k==='ST'&&!x.pierce&&(sp==null||x.i<sp)).map(x=>x.i);
+ const P=[],stA=st.filter(i=>i<=(ar??sc)+Math.max(25,Math.round((N-sc)*0.15))),aEnd=Math.min(N,stA.length?stA[stA.length-1]:(ar??sc));
+ P.push({n:'A',a:ps??sc,b:aEnd});
+ // điểm bắt đầu Pha D
+ let dStart=null;
+ if(dist)dStart=sosIn!=null&&(brk==null||sosIn<brk)?sosIn:brk;
+ else dStart=sosIn!=null?sosIn:brk;
+ // Hết Pha C khi Test xong và giá bắt đầu đi lên trong khung (đóng cửa vượt đỉnh nến Test và vào nửa dưới-giữa range) -> Pha D dù chưa có SOS rõ
+ if(dStart==null&&sp!=null&&rg){const an=te!=null?te:sp+2;
+  for(let i=an+1;i<=N;i++){if(D[i].c>D[an].h&&D[i].c>D[i-1].c&&D[i].c>rg.sup+(rg.res-rg.sup)*0.3){dStart=i;break}}}
+ const dLim=dStart!=null?dStart-1:N;
+ let cStart=null;
+ if(sp!=null){let k=-1;const uaL=Math.max(-1,...ev.filter(x=>x.k==='UA').map(x=>x.i));for(let i=Math.max(aEnd+1,sp-8,uaL+1);i<sp;i++)if(k<0||D[i].h>=D[k].h)k=i;cStart=k>=0?k:sp;if(cStart>dLim)cStart=null}
+ const bEnd=cStart!=null?cStart-1:dLim;
+ if(bEnd>aEnd)P.push({n:'B',a:aEnd+1,b:bEnd});
+ if(cStart!=null){const cEnd=Math.max(cStart,Math.min(dLim,dStart!=null?dLim:Math.max(sp,te??sp)+2));P.push({n:'C',a:cStart,b:Math.min(cEnd,N)})}
+ if(dStart!=null){
+  let dEnd;
+  if(dist)dEnd=lps!=null?lps:Math.min(N,(brk??dStart)+8);
+  else dEnd=(brk!=null&&held)?brk:N;   // chưa giữ được trên kháng cự -> vẫn là Pha D, chưa phải E
+  dEnd=Math.max(dEnd,dStart);
+  P.push({n:'D',a:dStart,b:Math.min(N,dEnd)});
+  if(dEnd<N)P.push({n:'E',a:dEnd+1,b:N});
+ }
+ return P;
+}
+function pressure(D){
+ const f=(arr)=>{let b=0,s=0;for(const x of arr){const sp=(x.h-x.l)||1e-9,loc=(x.c-x.l)/sp;b+=x.v*(0.5*loc+0.5*(x.c>=x.o?1:0));s+=x.v*(0.5*(1-loc)+0.5*(x.c<x.o?1:0))}return b/(b+s||1)*100};
+ const last=D.slice(-10),mid=D.slice(-20),lng=D.slice(-60);
+ const v20=avg(D.slice(-60).map(b=>b.v))||1,r20=avg(D.slice(-60).map(b=>b.h-b.l))||1;
+ const effort=avg(last.map(b=>b.v))/v20,result=avg(last.map(b=>b.h-b.l))/r20;
+ const lo=Math.min(...D.slice(-40).map(b=>b.l)),hi=Math.max(...D.slice(-40).map(b=>b.h)),c=D[D.length-1].c,pos=(c-lo)/((hi-lo)||1);
+ let er='Nỗ lực (khối lượng) và kết quả (biên độ giá) tương xứng, chưa có dấu hiệu hấp thụ.';
+ if(effort>1.3&&result<0.85)er=pos>0.6?'Khối lượng lớn nhưng giá ít tiến triển ở vùng cao: dấu hiệu CUNG đang hấp thụ cầu (nguy cơ phân phối).':pos<0.4?'Khối lượng lớn nhưng giá không giảm thêm ở vùng thấp: dấu hiệu CẦU hấp thụ cung (khả năng tích lũy).':'Khối lượng lớn nhưng giá ít biến động giữa vùng: hai bên đang giằng co.';
+ else if(effort<0.8&&result>1.1)er='Giá chạy rộng trên khối lượng thấp: nỗ lực yếu, di chuyển thiếu bền vững.';
+ else if(effort>1.3&&result>1.2)er='Khối lượng và biên độ cùng lớn: động lượng thật, xu hướng đang được tiếp sức.';
+ let uv=0,dv=0,obv=0,ob0=0;D.slice(-20).forEach(x=>{if(x.c>=x.o)uv+=x.v;else dv+=x.v});
+ D.slice(-40).forEach((x,i,a)=>{if(i>0)obv+=(x.c>a[i-1].c?1:x.c<a[i-1].c?-1:0)*x.v;if(i===19)ob0=obv});
+ const vr5=avg(D.slice(-5).map(x=>x.v))/(avg(D.slice(-50).map(x=>x.v))||1);
+ return{b10:f(last),b20:f(mid),b60:f(lng),er,effort,result,uv,dv,vr5,obvUp:obv-ob0*2>0,obv};
+}
+
+const NM={SC:['SC','BC'],AR:['AR','AR'],ST:['ST','ST'],SP:['Spring','UTAD'],SOS:['SOS','SOW'],MSOS:['SOS','SOW'],JAC:['JAC','SOW'],UA:['UA','UT'],UT:['UT','UT'],LPS:['LPS','LPSY'],TEST:['Test','Test'],PS:['PS','PSY'],BU:['BU','BU'],RETEST:['Retest','Retest']};
+const evName=(k,mode)=>NM[k][mode==='dist'?1:0];
+// "Wyckoff Story": diễn giải theo Nỗ lực - Kết quả (khối lượng - giá) giống tài liệu mẫu
+function story(D,A){
+ const S=[];if(!A.rng)return S;
+ const N=D.length-1,acc=A.mode==='acc',g=k=>A.ev.find(x=>x.k===k);
+ const V=avg(D.slice(-120).map(b=>b.v))||1,avA=(a,b)=>avg(D.slice(a,b+1).map(x=>x.v)),rt=(a,b)=>avA(a,b)/V,fx=x=>x.toFixed(1);
+ const sc=g('SC'),ar=g('AR'),sp=g('SP'),sos=g(acc?'JAC':'SOS'),lps=g('LPS');
+ if(sc){const a=Math.max(0,sc.i-30),m=a+Math.floor((sc.i-a)/2),r=avA(m+1,sc.i)/(avA(a,m)||1);
+  S.push({a,b:sc.i,col:acc?'r':'g',arrow:[avA(a,m),avA(m+1,sc.i)],
+   s:sc.weak?(acc?'SC? KL chỉ '+fx(sc.rv)+'x TB - chưa có climax điển hình':'BC? KL chỉ '+fx(sc.rv)+'x TB - chưa có climax điển hình'):r<0.85?(acc?'KL giảm dần về SC ('+fx(r)+'x)':'KL giảm dần về BC ('+fx(r)+'x)'):acc?'Khối lượng tăng dần về SC: cung tăng tốc':'Nhu cầu tăng dần về Climactic Run',t:sc.weak?((acc?'SC':'BC')+' CHƯA đạt chuẩn climax: nến này chỉ có khối lượng '+fx(sc.rv)+' lần trung bình, không có nến biên độ rộng + khối lượng bùng nổ ở cuối nhịp '+(acc?'giảm':'tăng')+'. Đây chỉ là '+(acc?'đáy':'đỉnh')+' đầu range; cấu trúc có thể là tái '+(acc?'tích lũy':'phân phối')+' hoặc chưa hoàn chỉnh.'):r<0.85?('Khối lượng nửa sau chỉ bằng '+fx(r)+' lần nửa đầu nên không có đà tăng tốc dần; tuy vậy nến climax có khối lượng '+fx(sc.rv)+' lần trung bình.'):acc?'Nguồn cung tăng dần khi giá rơi về SC: khối lượng nửa sau gấp '+fx(r)+' lần nửa đầu, cung tăng tốc tới đỉnh điểm bán tháo.'
+        :'Nhu cầu tăng tốc vào giai đoạn Climactic Run: khối lượng nửa sau gấp '+fx(r)+' lần nửa đầu, hưng phấn của "weak hands" đẩy giá tới BC; Composite Man bắt đầu bán ra.'})}
+ if(sc&&ar){const r=rt(sc.i,ar.i),ch=acc?(D[ar.i].h/D[sc.i].c-1)*100:(1-D[ar.i].l/D[sc.i].c)*100;
+  S.push({a:sc.i,b:ar.i,col:acc?'g':'r',
+   s:r<1?(acc?'AR yếu: KL chỉ '+fx(r)+'x TB - cầu chưa rõ':'AR yếu: KL chỉ '+fx(r)+'x TB - cung chưa rõ'):acc?'AR: khối lượng '+fx(r)+'x TB - cầu xuất hiện':'Đồng nhất của cung với kết quả giảm giá lớn',t:r<1?('AR '+(acc?'bật lên ':'giảm ')+fx(ch)+'% nhưng khối lượng chỉ '+fx(r)+' lần trung bình: nhịp '+(acc?'hồi thiếu lực cầu':'giảm thiếu lực cung')+', '+(acc?'kháng cự':'hỗ trợ')+' của range chưa được xác lập chắc chắn.'):acc?'AR bật lên '+fx(ch)+'% trên khối lượng '+fx(r)+' lần trung bình: cầu xuất hiện, xác lập đỉnh range. Kết quả tăng đi cùng nỗ lực mua.'
+        :'AR giảm '+fx(ch)+'% với khối lượng '+fx(r)+' lần trung bình: nguồn cung nhất quán xuất hiện, kết quả đi xuống cho thấy Composite Man đang bán trên đường đi xuống; xác lập đáy range.'})}
+ if(ar){const a=ar.i+1,b=sp?sp.i-1:N;
+  if(b-a>=8){const m=a+Math.floor((b-a)/2),r=rt(a,b),h1=Math.max(...D.slice(a,m).map(x=>x.h)),h2=Math.max(...D.slice(m,b+1).map(x=>x.h)),l1=Math.min(...D.slice(a,m).map(x=>x.l)),l2=Math.min(...D.slice(m,b+1).map(x=>x.l));
+   const hh=h2>h1,hl=l2>l1;
+   S.push({a,b,col:r<1?(acc?'g':'r'):(acc?'r':'g'),
+    s:acc?(r<1?'Biến động thấp trong Phase B - cung cạn':'Khối lượng cao trong B - cung còn nhiều'):(r<1?'Giá tăng trên nhu cầu thấp':'Khối lượng lớn, giá ít tiến triển - cung hấp thụ'),t:'Phase B: đỉnh '+(hh?'cao dần (HH)':'thấp dần (LH)')+', đáy '+(hl?'cao dần (HL)':'thấp dần (LL)')+', khối lượng TB '+fx(r)+' lần. '+
+      (acc?(r<1?(hl?'Cung cạn dần, đáy nâng cao: dấu hiệu Composite Man đang tích lũy.':'Khối lượng cạn nhưng đáy chưa nâng cao: chờ Spring/Test để xác nhận.'):'Cung còn đáng kể, chưa vội mua; chờ khối lượng co lại và Spring.')
+           :(r<1?'Cầu yếu đi dù giá còn trong range: dấu hiệu thiếu nhu cầu thật.':'Khối lượng lớn mà giá ít tiến triển: cung đang hấp thụ cầu (phân phối).'))})}}
+ if(sp){const b=D[sp.i],r=b.v/V,pen=acc?(A.sup-b.l)/A.sup*100:(b.h-A.res)/A.res*100;
+  S.push({a:sp.i,b:Math.min(N,sp.i+3),col:r<1?(acc?'g':'r'):'y',
+   s:(acc?'Spring #'+sp.type:'UT #'+sp.type)+': KL '+fx(sp.vr)+'x nhịp giảm trước'+(r<1.2?(acc?' - cung yếu':' - cầu kiệt'):' - cần Test'),t:(acc?'Spring':'UTAD')+': giá '+(acc?'thủng hỗ trợ':'vượt kháng cự')+' '+fx(pen)+'% rồi đóng cửa lại trong range, khối lượng '+fx(r)+' lần TB. '+
+     (r<1.2?(acc?'Cung yếu, Test thành công: cam kết tạm thời đã bị từ chối.':'Cầu yếu ở đỉnh: cam kết tạm thời bị từ chối, nguy cơ giảm.'):'Khối lượng lớn: cần Test lại để xác nhận.')})}
+ const e5=sos?sos.i:Math.max(0,N-10);
+ {const b10=A.pr.b10;S.push({a:e5,b:N,col:(sos?acc:b10>50)?'g':'r',
+  s:sos?(acc?'SOS':'MSOW')+': khối lượng '+fx(D[sos.i].v/V)+'x TB':'Lực mua 10 phiên: '+b10.toFixed(0)+'%',t:sos?(acc?'SOS':'MSOW')+' trên khối lượng '+fx(D[sos.i].v/V)+' lần TB'+(lps?', sau đó '+evName('LPS',A.mode)+' với khối lượng '+fx(D[lps.i].v/V)+' lần TB.':'. Chờ nhịp '+evName('LPS',A.mode)+' để xác nhận.')+' Lực mua 10 phiên gần nhất: '+b10.toFixed(0)+'%.'
+        :'10 phiên gần nhất: lực mua '+b10.toFixed(0)+'% / bán '+(100-b10).toFixed(0)+'%. '+(b10>55?'Cầu nhỉnh hơn nhưng chưa có tín hiệu phá vỡ.':b10<45?'Cung nhỉnh hơn, chưa có tín hiệu đảo chiều.':'Cân bằng, chờ nỗ lực thật sự.')})}
+ S.forEach((x,i)=>x.n=i+1);return S;
+}
+function analyze(D,tf){
+ setTF(tf||'D');
+ const N=D.length-1,c=D[N].c,s20=sma(D,20,N),s50=sma(D,50,N),s20p=sma(D,20,N-10);
+ const atr=avg(D.slice(-14).map(b=>b.h-b.l));
+ const pr=pressure(D),rg=findRange(D);
+ let mode,ev=[],P=[],sup,res,vAvg,rng=null,priorRet=0,pend=false,failed=false,extra={};
+ const tr=c>s50&&s20>s50&&s20>s20p?'up':(c<s50&&s20<s50&&s20<s20p?'down':'side');
+ if(rg){
+  priorRet=D[rg.s].c/D[Math.max(0,rg.s-60)].c-1;
+  mode=priorRet>TFP.prior?'dist':'acc';
+  let dd=mode==='dist'?mirror(D):D,d=detect(dd,rg,mode);
+  // Phân phối THẤT BẠI (giá thủng đáy/Ice rồi quay lại và giữ trên hỗ trợ) = thực chất là Spring của tích lũy/tái tích lũy -> đọc lại theo tích lũy
+  if(mode==='dist'&&(d.failedBreak||d.failed)){const d2=detect(D,rg,'acc',true);
+   if(!d2.failed&&!d2.failedBreak&&D[N].c>=d2.sup){mode='acc';dd=D;d=d2;extra.reread=true}}
+  extra=d;
+  ev=d.ev;P=makePhases(ev,N,dd,mode,d.held,{sup:d.sup,res:d.res});vAvg=d.vAvg;rng=rg;pend=d.pend;failed=d.failed;
+  if(mode==='dist'){sup=-d.res;res=-d.sup}else{sup=d.sup;res=d.res}
+ const p0=(c-sup)/((res-sup)||1);
+  if((mode==='acc'&&p0<-0.25)||(mode==='dist'&&p0>1.25)){mode=mode==='acc'?'tdown':'tup';ev=[];P=[];rng=null;pend=false;failed=false;extra={};sup=Math.min(...D.slice(-30).map(b=>b.l));res=Math.max(...D.slice(-30).map(b=>b.h));vAvg=avg(D.slice(-30).map(b=>b.v))}
+ }else{
+  mode=tr==='down'?'tdown':'tup';
+  sup=Math.min(...D.slice(-30).map(b=>b.l));res=Math.max(...D.slice(-30).map(b=>b.h));
+  vAvg=avg(D.slice(-30).map(b=>b.v));
+ }
+ const H=res-sup,g=k=>ev.find(x=>x.k===k),pos=(c-sup)/(H||1),fb=!!extra.failedBreak;
+ if(fb&&P.length){const Lp=P[P.length-1],ex=i=>mode==='dist'?-D[i].l:D[i].h;
+  if(Lp.n==='E'){let pk=Lp.a;for(let i=Lp.a;i<=N;i++)if(ex(i)>ex(pk))pk=i;
+   if(pk>Lp.a&&pk<N){const b0=Lp.b;Lp.b=pk;P.push({n:'B',lab:'B*',re:true,a:pk+1,b:b0})}else{Lp.n='B';Lp.lab='B*';Lp.re=true}}
+  else Lp.lab=Lp.n+'✗'}
+ const cur=P.length?P[P.length-1].n:null,curLab=P.length?(P[P.length-1].lab||cur):null;
+ let sc={up:0,side:0,down:0};
+ const bp=pr.b20;
+ if(mode==='acc')sc.up+=1;if(mode==='dist')sc.down+=1;
+ if(mode==='tup'){sc.up+=2.5;sc.side+=1;sc.down+=0.4}
+ if(mode==='tdown'){sc.down+=2.5;sc.side+=1;sc.up+=0.4}
+ if(g('SP')){mode==='acc'?sc.up+=1.5:sc.down+=1.5}
+ if(g(mode==='dist'?'SOS':'JAC')&&!fb){mode==='acc'?sc.up+=2:sc.down+=2}
+ if(fb){mode==='acc'?sc.down+=2.5:sc.up+=2.5}
+ if(g('LPS')&&!fb){mode==='acc'?sc.up+=0.5:sc.down+=0.5}
+ if(cur==='A'||cur==='B')sc.side+=2;else if(cur==='C'||cur==='D')sc.side+=0.5;
+ if(bp>55)sc.up+=(bp-50)/10;else if(bp<45)sc.down+=(50-bp)/10;
+ if(tr==='up'){sc.up+=1}else if(tr==='down'){sc.down+=1}else sc.side+=0.5;
+ if(rng&&pos>0.8&&!g(mode==='dist'?'SOS':'JAC'))sc.side+=0.8;
+ if(rng&&pos<0.2&&!g('SP'))sc.down+=0.5;
+ const ex=Object.fromEntries(Object.entries(sc).map(([k,v])=>[k,Math.exp(0.4*v)]));
+ const z=ex.up+ex.side+ex.down,prob={up:ex.up/z*100,side:ex.side/z*100,down:ex.down/z*100};
+ const tgtUp=Math.max(res,c)+0.8*Math.max(H,atr*4),tgtDn=Math.min(sup,c)-0.6*Math.max(H,atr*4);
+ const A={tf:tf||'D',mode,tr,rng,ev,P,cur,curLab,failedBreak:fb,holdLvl:fb?(mode==='dist'?-extra.holdLvl:extra.holdLvl):null,pend,failed,sec:!!extra.secondary,spType:extra.spType||0,spWeak:!!extra.spWeak,sup,res,H,pos,pr,prob,tgtUp,tgtDn,atr,c,s20,s50,priorRet,vAvg,N};
+ A.sd=supplyDemand(D,A);A.sig=signal(D,A);A.paths=projections(D,A);A.story=story(D,A);A.kp=keyPoints(D,A);
+ return A;
+}
+// Tín hiệu mua/bán theo ebook:
+// MUA 1 = Spring #3 (mua ngay) hoặc Test thành công sau Spring #2 | MUA 2 = LPS (đáy sau cao hơn) | MUA 3 = BU/SOS vượt đỉnh
+// BÁN: UT #3 bán ngay; UT #2 chờ hồi yếu; SOW phá hỗ trợ; LPSY = điểm bán tốt nhất
+function signal(D,A){
+ const{N,c,sup,res,mode,ev,pos}=A,g=k=>ev.find(x=>x.k===k),rec=(e,k)=>e&&N-e.i<=k;
+ const acc=mode==='acc',dist=mode==='dist',H=A.H,f=x=>x.toFixed(2);
+ const sp=g('SP'),sos=g(dist?'SOS':'JAC'),lps=g('LPS'),bu=g('BU'),te=g('TEST'),ms=g('SOS');
+ const L=D[N];
+ if(A.failed)return{t:'wait',title:'CẢNH BÁO: '+(acc?'Spring':'UT/UTAD')+' THẤT BẠI',d:['Giá '+(acc?'thủng sâu dưới đáy Spring':'vượt đỉnh UTAD')+' và không rút lại được: kịch bản '+(acc?'tích lũy':'phân phối')+' bị vô hiệu, nguy cơ '+(acc?'giảm tiếp':'tăng tiếp')+'. Không mở vị thế '+(acc?'mua':'bán')+'.']};
+ if(A.failedBreak){const hl=A.holdLvl;return{t:'wait',title:'CẢNH BÁO: '+(acc?'JAC/SOS + BU THẤT BẠI':'SOW THẤT BẠI')+' - giá quay lại trong range',d:acc?['Sau SOS/JAC giá đã đóng cửa dưới đáy BU/LPS ('+f(hl)+') và dưới kháng cự cũ '+f(res)+': breakout bị phủ định (giống bẫy tăng/UT trong Phase B). Điểm cắt lỗ theo ebook (dưới đáy BU/LPS) đã bị thủng.','Không mua lúc này. Đang giữ hàng: thoát hoặc giảm mạnh tỷ trọng. Chỉ xét lại khi có Spring/Test mới tại hỗ trợ '+f(sup)+' hoặc giá lấy lại '+f(res)+' bằng nến rộng, khối lượng lớn.']:['Sau SOW giá đã đóng cửa trên đỉnh LPSY ('+f(hl)+') và trên hỗ trợ cũ '+f(sup)+': phá vỡ xuống bị phủ định.','Không bán khống lúc này; đang bán khống thì cân nhắc đóng bớt.']}}
+ const plan=(e,st,tg,tr)=>'Kế hoạch 3 đợt (mỗi đợt ~30% vốn, chỉ mua thêm khi đợt trước đã có lãi): Vùng vào '+f(e)+' • Cắt lỗ '+f(st)+' • Mục tiêu '+f(tg)+(tr?' • '+tr:'');
+ if(acc){
+  if((rec(bu,8)||rec(lps,10))&&c>res*0.97){const e=rec(bu,8)?bu:lps;return{t:'buy',big:false,title:'ĐIỂM MUA 2: '+(e===bu?'BU/BUEC - test lại kháng cự cũ':'LPS - Last Point of Support'),d:['Sau SOS/JAC, giá hồi về '+(e===bu?'kháng cự cũ '+f(res)+' (đã thành hỗ trợ)':'đáy cao hơn')+' với biên độ và khối lượng giảm: cung đã cạn, đây là điểm mua an toàn và là điểm mua gia tăng.',plan(c,D[e.i].l*0.995,A.tgtUp,'Cắt lỗ dưới đáy '+(e===bu?'BU':'LPS'))]}}
+  if(rec(sos,6))return{t:'buy',big:false,title:'ĐIỂM MUA 3 (thận trọng): JAC/SOS - phá kháng cự',d:['Nến tăng biên độ rộng, khối lượng cao, đóng cửa trên '+f(res)+': cầu áp đảo cung. Nếu chưa mua ở Spring/LPS thì đây là điểm mua đầu tiên nhưng rủi ro cao hơn.','Ưu tiên chờ nhịp BUEC/LPS về '+f(res)+' với khối lượng thấp để mua với rủi ro nhỏ hơn.',plan(c,res-0.05*H,A.tgtUp)]};
+  if(sp&&N-sp.i<=15&&c>sup){
+   const ty=sp.type,tOK=!!te;
+   if(ty===3)return{t:'buy',big:true,title:'ĐIỂM MUA LỚN NHẤT (MUA 1): Spring #3 - cung đã cạn kiệt',d:['Giá thủng hỗ trợ nông và khối lượng thấp ('+sp.vr.toFixed(2)+'x khối lượng các nhịp giảm trước) rồi đóng cửa lại trên hỗ trợ: cung đã cạn, có thể mua ngay không cần chờ test.',plan(c,D[sp.i].l*0.995,res,'mục tiêu kế tiếp '+f(A.tgtUp))]};
+   if(ty===2&&tOK)return{t:'buy',big:true,title:'ĐIỂM MUA LỚN NHẤT (MUA 1): Test thành công sau Spring #2',d:['Spring #2 có khối lượng cao hơn #3 nên cần Test: phiên Test tạo đáy cao hơn đáy Spring với khối lượng thấp = xác nhận cung cạn.',plan(c,D[sp.i].l*0.995,res,'mục tiêu kế tiếp '+f(A.tgtUp))]};
+   if(ty===2)return{t:'wait',title:'Spring #2 - CHỜ TEST XÁC NHẬN, chưa mua',d:['Khối lượng Spring ('+sp.vr.toFixed(1)+'x) còn cao: vẫn còn cung ở mức giá này. Chỉ mua khi có phiên Test đáy cao hơn '+f(D[sp.i].l)+' với khối lượng thấp.','Nếu sau Spring không có Test: điểm mua 1 là khi giá vượt lại hỗ trợ cũ bằng nến tăng rộng + khối lượng lớn.']};
+   if(ty===1)return A.spWeak?{t:'sell',big:false,title:'Spring #1 THẤT BẠI - nguồn cung còn lớn (cân nhắc bán)',d:['Spring có khối lượng rất lớn ('+sp.vr.toFixed(1)+'x) và phiên sau hồi phục yếu (khối lượng chỉ bằng một nửa): hỗ trợ '+f(sup)+' có thể thành kháng cự mới.','Không mua; nếu đang giữ hàng, cân nhắc giảm tỷ trọng. Dừng lỗ khi giá đóng cửa lại trên '+f(sup)+' bằng nến mạnh.']}:{t:'wait',title:'Spring #1 - KHÔNG MUA (khối lượng quá lớn)',d:['Khối lượng Spring ('+sp.vr.toFixed(1)+'x các nhịp giảm trước) cho thấy cung còn rất lớn. Theo Wyckoff không mở vị thế mua ở kiểu Spring này; chờ hồi phục vượt '+f(sup)+' kèm bằng chứng cầu.']};
+  }
+  if(ms&&N-ms.i<=8)return{t:'wait',title:'SOS (trong khung giá) xuất hiện - theo dõi nhịp LPS',d:['Nến tăng rộng khối lượng cao đóng cửa trên giữa range nhưng chưa vượt kháng cự '+f(res)+'. Chờ nhịp hồi LPS đáy cao hơn để mua.']};
+ }
+ if(dist){
+  if(rec(lps,10)&&c<sup*1.03)return{t:'sell',big:true,title:'ĐIỂM BÁN LỚN NHẤT: LPSY - Last Point of Supply',d:['Sau SOW, nhịp hồi yếu (nến tăng hẹp, khối lượng thấp) về hỗ trợ cũ '+f(sup)+' (ICE) rồi bị từ chối: không còn cầu. Wyckoff coi LPSY là điểm bán tốt nhất; các LPSY sau thường thấp hơn.','Vùng bán/giảm tỷ trọng: '+f(c)+' • Dừng lỗ: trên đỉnh nhịp hồi '+f(D[lps.i].h)+' • Mục tiêu: '+f(A.tgtDn)]};
+  if(rec(sos,6))return{t:'sell',big:false,title:'ĐIỂM BÁN: SOW - phá hỗ trợ (ICE) với khối lượng lớn',d:['Nến giảm biên độ rộng, khối lượng lớn, đóng cửa dưới '+f(sup)+': cung áp đảo cầu, xu hướng giảm bắt đầu.','Bán/giảm tỷ trọng; chờ nhịp hồi yếu (LPSY) để thoát nốt phần còn lại. Mục tiêu giảm: '+f(A.tgtDn)]};
+  if(sp&&N-sp.i<=12&&c<res){
+   if(sp.type===3)return{t:'sell',big:true,title:'ĐIỂM BÁN LỚN: UT #3 - bán ngay',d:['Giá vượt kháng cự '+f(res)+' trên khối lượng lớn ('+sp.vr.toFixed(1)+'x) nhưng đóng cửa quay lại dưới ít nhất một nửa biên độ vượt: bẫy tăng, smart money đang phân phối.','Vùng bán: '+f(c)+' • Dừng lỗ: trên đỉnh UT '+f(D[sp.i].h)+' • Mục tiêu: hỗ trợ '+f(sup)+' rồi '+f(A.tgtDn),'Lưu ý ebook: smart money hay tạo UT để dụ bán sớm; nếu muốn an toàn hơn hãy chờ Phase D và LPSY.']};
+   return{t:'wait',title:'UT #2 / UTAD - CHỜ XÁC NHẬN rồi mới bán',d:['Giá vượt kháng cự rồi quay lại dưới '+f(res)+' nhưng chưa đủ mạnh để kết luận. Chỉ bán khi nhịp hồi sau đó yếu với khối lượng thấp (No Demand) hoặc khi giá thủng hỗ trợ '+f(sup)+'.','An toàn nhất là chờ Phase D và LPSY.']};
+  }
+ }
+ const d=[];let ttl='CHƯA PHẢI ĐIỂM MUA, CŨNG CHƯA PHẢI ĐIỂM BÁN';
+ const pc=Math.round(pos*100);
+ if(A.pend)d.push(acc?'Giá đang thủng dưới hỗ trợ '+f(sup)+': nếu 1-3 phiên tới đóng cửa lại trên mức này thì đó là Spring (Phase C): xếp loại theo khối lượng rồi mới xét mua; nếu tiếp tục đóng cửa dưới thì range bị phá vỡ.':'Giá đang vượt kháng cự '+f(res)+': nếu đóng cửa lại bên dưới trong 1-3 phiên thì là UT/UTAD (Phase C); lúc đó mới xét điểm bán.');
+ if(acc||dist){
+  d.push('Giá đang ở '+pc+'% biên độ range ('+f(sup)+' - '+f(res)+'), '+(A.cur?'Phase '+A.cur:'chưa rõ phase')+(A.sec?' (hỗ trợ thứ cấp: chưa có ST đúng nghĩa tại SC)':'')+'.');
+  if(sos){d.push((acc?'Đã có JAC/SOS ngày '+fmtD(D[sos.i].t):'Đã có SOW ngày '+fmtD(D[sos.i].t))+' nhưng nhịp '+(acc?'LPS/BU':'LPSY')+' chưa rõ: không đuổi giá, chờ nhịp '+(acc?'hồi về '+f(res)+' với biên độ và khối lượng thu hẹp':'hồi về '+f(sup)+' yếu và bị từ chối')+'.')}
+  else if(acc){
+   if(pos>0.85)d.push('Sát kháng cự nhưng chưa có JAC/SOS (đóng cửa trên '+f(res)+' bằng nến rộng, khối lượng > '+Math.round(A.vAvg*1.2).toLocaleString()+'). Mua lúc này là mua đuổi.');
+   else if(pos<0.18)d.push('Sát hỗ trợ: theo dõi ST/Spring. Hiện chưa có phiên đóng cửa lại trên hỗ trợ kèm khối lượng thấp (Spring #3) hoặc Test thành công.');
+   else d.push('Giữa vùng range: không có lợi thế vị thế; chờ giá về sát hỗ trợ (tìm Spring) hoặc bứt lên kháng cự (tìm JAC/SOS).');
+  }else{
+   if(pos<0.15)d.push('Sát hỗ trợ (ICE) nhưng chưa có SOW (đóng cửa dưới '+f(sup)+' bằng nến rộng, khối lượng lớn). Chưa bán đuổi.');
+   else if(pos>0.82)d.push('Sát đỉnh range: chờ UT/UTAD bị từ chối (vượt '+f(res)+' rồi đóng cửa lại dưới), không bán trước khi có tín hiệu.');
+   else d.push('Giữa vùng range phân phối: chưa có lợi thế; chờ UT/UTAD ở đỉnh hoặc SOW ở đáy.');
+  }
+  if(!sp)d.push(acc?'Phase C (Spring) chưa xuất hiện.':'Phase C (UT/UTAD) chưa xuất hiện.');
+ }else{
+  if(mode==='tup')d.push('Cổ phiếu đang trong xu hướng tăng (Markup, Phase E). Điểm mua là nhịp điều chỉnh về hỗ trợ '+f(sup)+' với khối lượng cạn (No Supply/Test); giá hiện cách hỗ trợ '+f((c-sup)/c*100)+'%.');
+  else d.push('Cổ phiếu đang trong xu hướng giảm (Markdown). Chưa có cấu trúc tích lũy (PS, SC, AR, ST). Đứng ngoài, chỉ cân nhắc khi xuất hiện Climax với khối lượng đột biến rồi AR và ST.');
+  d.push('Chưa có sự kiện Wyckoff rõ ràng gần đây nên chưa có tín hiệu vào lệnh.');
+ }
+ return{t:'wait',title:ttl,d};
+}
+// Đường đi dự kiến 50 phiên cho 3 kịch bản
+function projections(D,A){
+ const{c,sup,res,H,tgtUp,tgtDn,atr}=A,mid=(sup+res)/2,h=Math.max(H,atr*3);
+ const up=A.cur==='E'||A.mode==='tup'?[[0,c],[10,c+0.35*(tgtUp-c)],[20,c+0.2*(tgtUp-c)],[50,tgtUp]]:[[0,c],[12,Math.max(res,c)*0.995],[20,res-0.08*h],[50,tgtUp]];
+ const sd=[[0,c],[12,sup+0.15*h],[28,res-0.15*h],[40,mid],[50,mid]];
+ const dn=[[0,c],[10,c-0.25*(c-tgtDn)],[18,c-0.15*(c-tgtDn)],[50,tgtDn]];
+ const mk=pts=>{const out=[];for(let i=1;i<=50;i++){let k=1;while(pts[k][0]<i)k++;const[a,pa]=pts[k-1],[b,pb]=pts[k];out.push(pa+(pb-pa)*(i-a)/(b-a)+Math.sin(i*1.3)*atr*0.35)}return out};
+ return{up:mk(up),side:mk(sd),down:mk(dn)};
+}
+// ===== Các điểm mua/bán trong cấu trúc + điểm lớn nhất (theo tỷ lệ Lợi nhuận/Rủi ro) =====
+function keyPoints(D,A){
+ const acc=A.mode==='acc',dist=A.mode==='dist',H=Math.max(A.H,A.atr*3),out=[],g=k=>A.ev.filter(x=>x.k===k),spE=A.ev.find(x=>x.k==='SP');
+ const add=(lab,e,side,entry,stop,tgt,note)=>{const risk=Math.abs(entry-stop),rew=Math.abs(tgt-entry);if(risk>0&&rew>0)out.push({lab,i:e.i,side,entry,stop,tgt,rr:rew/risk,note})};
+ if(acc){
+  g('SP').forEach(e=>{if(e.type!==1)add('Spring #'+e.type,e,'buy',D[e.i].c,D[e.i].l*0.995,A.tgtUp,e.type===3?'Mua đợt 1 ngay (cung cạn)':'Chờ Test thành công rồi mua đợt 1')});
+  g('TEST').forEach(e=>add('Test sau Spring',e,'buy',D[e.i].c,(spE?D[spE.i].l:D[e.i].l)*0.995,A.tgtUp,'Mua đợt 1 (Test thành công)'));
+  g('LPS').forEach(e=>add('LPS',e,'buy',D[e.i].c,D[e.i].l*0.995,A.tgtUp,'Mua đợt 2 (đáy cao hơn)'));
+  g('BU').forEach(e=>add('BU/BUEC',e,'buy',D[e.i].c,D[e.i].l*0.995,A.tgtUp,'Mua đợt 3 (test kháng cự cũ)'));
+  g('JAC').forEach(e=>add('JAC',e,'buy',D[e.i].c,A.res-0.05*H,A.tgtUp,'Mua đợt 3 (rủi ro cao hơn)'));
+ }
+ if(dist){
+  g('SP').forEach(e=>add('UT/UTAD #'+e.type,e,'sell',D[e.i].c,D[e.i].h*1.005,A.tgtDn,e.type===3?'Bán ngay (UT #3)':'Chờ xác nhận rồi bán'));
+  g('LPS').forEach(e=>add('LPSY',e,'sell',D[e.i].c,D[e.i].h*1.005,A.tgtDn,'Điểm bán tốt nhất (cuối cùng)'));
+  g('SOS').forEach(e=>add('SOW',e,'sell',D[e.i].c,A.sup+0.05*H,A.tgtDn,'Bán / giảm tỷ trọng'));
+ }
+ const side=acc?'buy':dist?'sell':null;
+ if(side){const c=out.filter(x=>x.side===side);if(c.length)c.reduce((p,q)=>q.rr>p.rr?q:p).best=true}
+ return out.sort((a,b)=>a.i-b.i);
+}
+// ===== Hỏi đáp: tư vấn giữ / bán / mua thêm theo GIÁ MUA của người dùng (theo nguyên tắc ebook) =====
+function advise(D,A,costIn,ctx){
+ const N=A.N,c=A.c,f=x=>x.toFixed(2);let cost=costIn;if(cost>1000&&c<1000)cost/=1000;
+ const pl=(c/cost-1)*100,H=Math.max(A.H,A.atr*3),g=k=>A.ev.find(x=>x.k===k);
+ const acc=A.mode==='acc',dist=A.mode==='dist',tdn=A.mode==='tdown';
+ const sp=g('SP'),sos=g(dist?'SOS':'JAC'),lps=g('LPS'),bu=g('BU'),te=g('TEST');
+ const WN={WeakA:'Weakness A',NoDemand:'No Demand',WeakB:'Weakness B',Upthrust:'Upthrust'},wk=[];
+ for(let i=Math.max(1,N-4);i<=N;i++)vsaTags(D,i).forEach(t=>{if(WN[t]&&!wk.includes(WN[t]))wk.push(WN[t])});
+ const swingLow=Math.min(...D.slice(-20).map(b=>b.l)),swingHigh=Math.max(...D.slice(-10).map(b=>b.h));
+ const htf=(ctx||[]).filter(x=>x&&x.prob),nm=a=>a.map(x=>x.name).join(', ');
+ const htfBear=htf.filter(x=>x.mode==='dist'||x.mode==='tdown'||x.prob.down>x.prob.up+15),htfBull=htf.filter(x=>(x.mode==='acc'||x.mode==='tup')&&x.prob.up>=x.prob.down);
+ const o={pl,cost,lines:[],adds:[],takes:[],stop:null,notes:[],tone:'hold',act:''},L=o.lines;
+ L.push('Giá vốn '+f(cost)+' • giá hiện tại '+f(c)+' → '+(pl>=0?'LÃI ':'LỖ ')+Math.abs(pl).toFixed(1)+'%.');
+ const fb=!!A.failedBreak,bearish=A.failed||fb||tdn||(dist&&(!!sos||A.cur==='D'||A.cur==='E'));
+ const exitAct=pl>=0?'BÁN / CHỐT LỜI':(pl>-1?'THOÁT NGAY (gần hòa vốn)':'CẮT LỖ');
+ if(bearish){
+  o.tone='sell';o.act=exitAct+' - '+(fb?'breakout thất bại, cấu trúc đã bị phủ định':'cấu trúc đã chuyển xấu')+(pl<0?' (không bình quân giá xuống)':'');
+  L.push(fb?'Breakout THẤT BẠI: sau JAC/SOS giá đã đóng cửa quay lại dưới đáy BU/LPS ('+f(A.holdLvl)+') và dưới kháng cự cũ '+f(A.res)+'. Điểm cắt lỗ theo ebook (ngay dưới đáy BU/LPS) đã bị thủng; giá trở lại trong range.':A.failed?'Spring/UT đã THẤT BẠI (giá thủng sâu rồi không rút lên được): kịch bản đảo chiều bị vô hiệu.':dist?'Phân phối đã sang Phase '+A.cur+': cung áp đảo cầu. Theo ebook, nhà đầu tư còn giữ vị thế mua trong Phase D đều bị lỗ.':'Xu hướng giảm (Markdown), chưa có cấu trúc tích lũy (SC, AR, ST) nên chưa có bằng chứng smart money mua vào.');
+  o.takes.push({price:dist?A.sup:swingHigh,cond:'Nếu chưa bán hết: bán ở nhịp hồi yếu về vùng này (nến tăng hẹp, khối lượng thấp = No Demand / LPSY). Đây là điểm thoát tốt nhất, đừng chờ giá về lại giá vốn.'});
+  o.stop=swingLow;o.stopLabel='Mốc thoát toàn bộ';o.notes.push('Nếu giá đóng cửa dưới mốc thoát này mà không rút lên được thì thoát toàn bộ.');
+  if(pl<0)o.notes.push('KHÔNG mua thêm để bình quân giá xuống: ebook chỉ cho phép mua trung bình giá LÊN, và chỉ khi lần mua trước đã có lãi.');
+ }else if(dist){
+  o.tone=(sp||A.pos>0.75)?'sell':'wait';o.act='GIẢM TỶ TRỌNG DẦN - không mua thêm';
+  L.push('Đang trong phân phối (Phase '+(A.cur||'?')+'): smart money bán dần cho nhà đầu tư nhỏ lẻ; vùng '+f(A.sup)+' - '+f(A.res)+'.'+(sp?' Đã có UT/UTAD kiểu '+sp.type+'.':''));
+  o.takes.push({price:A.res,cond:'Bán bớt khi giá chạm kháng cự mà bị từ chối (UT/UTAD, nến Upthrust, Weak B).'});
+  o.takes.push({price:A.sup,cond:'Thủng hỗ trợ bằng nến rộng, khối lượng lớn (SOW) = bán hết phần còn lại.'});
+  o.stop=A.sup;o.stopLabel='Mốc thoát toàn bộ (thủng hỗ trợ)';
+ }else if(acc&&!sp&&!sos){
+  o.tone='hold';o.act=pl>=0?'GIỮ - chưa mua thêm':'GIỮ CÓ KỶ LUẬT - chưa mua thêm, không bình quân xuống';
+  L.push('Đang ở Phase '+(A.cur||'?')+' của tích lũy: smart money vẫn đang hấp thụ cung, chưa có Spring (Phase C) nên chưa xác nhận đáy.');
+  o.stop=A.sup-0.05*H;o.notes.push('Cắt lỗ khi đóng cửa dưới mốc này (thủng hỗ trợ không rút lên được = tích lũy thất bại).');
+  o.adds.push({price:A.sup,cond:'CHỈ khi xuất hiện Spring #3 (thủng nông, khối lượng thấp, đóng cửa lại trên hỗ trợ) hoặc Test thành công (đáy cao hơn đáy Spring, khối lượng thấp). Mua đợt 1 = 30% vốn kế hoạch.'});
+  o.takes.push({price:A.res,cond:'Chạm kháng cự mà chưa có SOS (nến rộng, khối lượng lớn): chốt bớt. Nếu vượt kèm SOS thì tiếp tục giữ.'});
+ }else if(acc&&sp&&!sos){
+  const ty=sp.type;o.stop=D[sp.i].l*0.995;
+  if(ty===1&&!te){o.tone='wait';o.act='NGUY CƠ CAO - không mua thêm, thoát nếu không lấy lại hỗ trợ';L.push('Spring #1: khối lượng rất lớn ('+sp.vr.toFixed(1)+'x) = cung còn nhiều. Ebook không mua ở kiểu này; nếu giá không vượt lại '+f(A.sup)+' thì hỗ trợ thành kháng cự.')}
+  else{o.tone='hold';o.act='GIỮ - Phase C đã có Spring #'+ty+(te?' và Test thành công':'');L.push('Spring #'+ty+' ngày '+fmtD(D[sp.i].t)+': '+(ty===3?'cung đã cạn.':'cần Test xác nhận.')+(te?' Test thành công: đáy cao hơn với khối lượng thấp.':''))}
+  o.notes.push('Theo ebook, điểm cắt lỗ đặt ngay dưới đáy Spring.');
+  if(ty!==1){if(!te)o.adds.push({price:(D[sp.i].l+A.sup)/2,cond:'Phiên Test: đáy cao hơn đáy Spring, khối lượng thấp -> mua đợt 1 nếu chưa mua.'});o.adds.push({price:A.sup+0.25*H,cond:'LPS: nhịp hồi có đáy cao hơn, biên độ & khối lượng hẹp -> mua đợt 2 (chỉ khi vị thế đang có lãi).'})}
+  o.takes.push({price:A.res,cond:'Kháng cự: vượt kèm SOS thì giữ tiếp, bị từ chối thì chốt bớt.'});o.takes.push({price:A.tgtUp,cond:'Mục tiêu theo Nhân - Quả.'});
+ }else{
+  const base=lps?D[lps.i].l*0.995:bu?D[bu.i].l*0.995:(sos?A.res-0.05*H:swingLow*0.99);
+  o.stop=pl>5?Math.max(base,cost):base;
+  o.tone=wk.length?'wait':'hold';
+  o.act=wk.length?'GIỮ NHƯNG CHỐT BỚT - xuất hiện nến yếu ('+wk.join(', ')+')':'GIỮ - xu hướng tăng, nâng dần điểm cắt lỗ';
+  if(A.tr==='down')L.push('Lưu ý: giá đang dưới MA20/MA50 (xu hướng ngắn hạn giảm); chỉ giữ khi giá còn trên mốc cắt lỗ.');
+  L.push(sos?'Đã có JAC/SOS'+(lps||bu?' và nhịp '+(bu?'BU':'LPS'):'')+': cầu thắng thế, đang ở Phase '+(A.cur||'E')+'.':'Đang trong xu hướng tăng (Markup).');
+  if(pl>5){o.stopLabel='Mốc bảo toàn vốn (đã nâng cắt lỗ)';o.notes.push('Điểm cắt lỗ đã được nâng lên không thấp hơn giá vốn để bảo toàn vốn.')}
+  o.adds.push({price:c>A.res+0.5*H?Math.max(A.res,swingLow):A.res,cond:'Nhịp test lại (BU/LPS): biên độ hẹp, khối lượng thấp, đáy cao hơn -> mua đợt tiếp theo (30% vốn)'+(pl>=0?', vì vị thế đang có lãi.':', nhưng chỉ khi đã có lãi; hiện đang lỗ nên KHÔNG bình quân.')});
+  o.takes.push({price:A.tgtUp,cond:'Vùng mục tiêu: bán dần khi xuất hiện BC (nến rộng, khối lượng cực lớn), Upthrust, No Demand/Weak B ở đỉnh.'});
+ }
+ if(!bearish&&o.stop!=null&&o.stop>=c){o.tone='sell';o.act=exitAct+' - giá đã thủng điểm cắt lỗ '+f(o.stop);L.push('Điểm cắt lỗ theo cấu trúc ('+f(o.stop)+') đang nằm TRÊN giá hiện tại: kế hoạch giữ/mua đã bị phủ định, không nên chờ hồi về giá vốn.');o.adds=[];o.takes=[];o.stopLabel='Điểm cắt lỗ ĐÃ BỊ THỦNG';o.broken=true}
+ if(htfBear.length)o.notes.push('Khung lớn ('+nm(htfBear)+') đang yếu/phân phối: ưu tiên bảo toàn vốn, giảm quy mô mua thêm.');
+ else if(htfBull.length)o.notes.push('Khung lớn ('+nm(htfBull)+') ủng hộ xu hướng tăng.');
+ if(pl<0&&o.adds.length)o.adds.forEach(a=>{if(a.price<cost)a.avg=(cost+a.price)/2});
+ if(!o.stopLabel)o.stopLabel='Điểm cắt lỗ';
+ o.notes.push('Nguyên tắc ebook: chia 3 đợt (30% vốn/đợt); đợt sau chỉ mua khi đợt trước đã có lãi; tổng khối lượng ~10-20% khối lượng TB 20 phiên.');
+ return o;
+}
+//==END==
+
+//==UI==
+const $=s=>document.querySelector(s);
+const FA_URL=sym=>'https://fireant.vn/b/charts?symbol='+encodeURIComponent(sym);
+let D=[],A=null,showW=false,sym='',src='',view='fa',faSym='',tick=0,busy=false,fails=0,lastKey='',lastPanel=0,tf='D',ctxs=[],hold=null;
+const f2=x=>x.toFixed(2);
+function fmtD(t){const d=new Date(t);let r=d.getDate()+'/'+(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(2);if(/^\d+$/.test(tf))r+=' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');return r}
+function setSt(s){$('#st').textContent=s}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showTab(t.dataset.v));
+function showTab(v){view=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+ const vw=$('.view');vw.className='view '+v;draw()}
+$('#bPng').onclick=()=>{if(!showW){setSt('Hãy bấm Vẽ biểu đồ Wyckoff trước');return}view==='fa'&&showTab('wy');draw();const u=$('#cv').toDataURL('image/png');if(hasPy())pywebview.api.save_png(u,sym).then(p=>setSt('Đã lưu: '+p));else{const a=document.createElement('a');a.href=u;a.download='Wyckoff_'+sym+'.png';a.click()}};
+$('#bOpen').onclick=()=>{const u=FA_URL(sym||$('#sym').value.trim().toUpperCase());if(window.pywebview&&pywebview.api)pywebview.api.open_external(u);else window.open(u)};
+const hasPy=()=>window.pywebview&&pywebview.api;
+const LOOK={'1':6,'5':25,'15':50,'30':90,'60':200,'D':1500,'W':3800,'M':7600},MINB={'M':12,'W':30},TFN2={'1':'1 phút','5':'5 phút','15':'15 phút','30':'30 phút','60':'1 giờ','D':'Ngày','W':'Tuần','M':'Tháng'};
+const minBars=t=>MINB[t]||80,isIntra=()=>/^\d+$/.test(tf);
+async function getHist(t){t=t||tf;
+ if(hasPy()){const j=JSON.parse(await pywebview.api.history(sym,t));if(j.s!=='ok')throw new Error(j.err||'lỗi');return j}
+ const to=Math.floor(Date.now()/1000),from=to-86400*LOOK[t];
+ const j=await(await fetch('https://dchart-api.vndirect.com.vn/dchart/history?resolution='+t+'&symbol='+sym+'&from='+from+'&to='+to)).json();
+ if(j.s!=='ok'||!j.t||j.t.length<minBars(t))throw new Error('Không đủ dữ liệu');return j}
+const toBars=j=>j.t.map((t,i)=>({t:t*1000,o:j.o[i],h:j.h[i],l:j.l[i],c:j.c[i],v:j.v[i]}));
+async function load(){
+ sym=$('#sym').value.trim().toUpperCase();if(!sym)return;
+ setSt('Đang tải '+sym+'...');
+ try{
+  const j=await getHist();D=toBars(j);src='live';A=null;lastKey='';
+  if(faSym!==sym){faSym=sym;$('#fa').src=FA_URL(sym)}
+  setSt(sym+' ['+TFN2[tf]+']: '+D.length+' nến ('+(j.src||'VNDirect')+') • đang cập nhật trực tiếp');hold=getHold(sym);
+  $('#bAna').disabled=false;$('#bDraw').disabled=false;
+  vw.vis=Math.min(300,D.length);vw.off=0;startLive();analyzeUI();draw();loadCtx();
+ }catch(e){setSt('Lỗi tải dữ liệu: '+(e.message||e))}
+}
+$('#tf').onchange=()=>{tf=$('#tf').value;vw.vis=300;vw.off=0;if(src==='live')load();else{lastKey='';analyzeUI();draw()}};
+$('#bLoad').onclick=load;$('#sym').onkeydown=e=>{if(e.key==='Enter')load()};
+$('#bDemo').onclick=()=>{clearInterval(liveT);D=demo();src='demo';sym='MẪU';A=null;showW=true;setSt('Đang dùng DỮ LIỆU MẪU');$('#bAna').disabled=false;$('#bDraw').disabled=false;analyzeUI();showTab('wy')};
+$('#bAna').onclick=()=>{analyzeUI();$('#side').scrollTop=0};
+$('#bDraw').onclick=()=>{showW=true;if(!A)analyzeUI();showTab('wy')};
+// ---- Cập nhật trực tiếp 1,5 giây/lần ----
+let liveT=null;
+function startLive(){clearInterval(liveT);liveT=setInterval(liveStep,1500)}
+const TFMS={'1':6e4,'5':3e5,'15':9e5,'30':18e5,'60':36e5,'D':864e5,'W':6048e5,'M':2.6e9};
+function applyQuote(q){
+ const n=D.length-1,L=D[n],k=q.p/L.c>200?1000:(L.c/q.p>200?0.001:1),p=q.p/k;if(!(p>0))return false;
+ const now=Date.now(),span=TFMS[tf],same=tf==='D'?new Date(L.t).toDateString()===new Date(now).toDateString():(now>=L.t&&now-L.t<span);
+ if(same){L.c=p;if(q.h>0&&tf==='D')L.h=Math.max(L.h,q.h/k);if(q.l>0&&tf==='D')L.l=Math.min(L.l,q.l/k);L.h=Math.max(L.h,p);L.l=Math.min(L.l,p);return true}
+ const d=new Date(now),wd=d.getDay(),hr=d.getHours();
+ if(tf!=='W'&&tf!=='M'&&wd>=1&&wd<=5&&hr>=9&&hr<=15&&Math.abs(p-L.c)>1e-9){const t0=isIntra()?Math.floor(now/span)*span:now;D.push({t:t0,o:p,h:p,l:p,c:p,v:0});return true}
+ return false}
+async function liveStep(){
+ if(busy||src!=='live'||!D.length)return;busy=true;tick++;if(tick%240===0)loadCtx();
+ try{
+  let ok=false;
+  if(hasPy()){try{const q=JSON.parse(await pywebview.api.quote(sym));if(q.s==='ok'){applyQuote(q);ok=true;fails=0}else fails++}catch(e){fails++}}
+  if(!ok&&tick%4===0||tick%10===0){try{const j=await getHist(),nb=toBars(j);if(nb.length>=minBars(tf)){D=nb;fails=0}}catch(e){}}
+  analyzeUI(true);draw();
+  $('#live').textContent='● '+new Date().toLocaleTimeString()+(fails>3?' (dữ liệu trễ)':'');
+ }catch(e){}finally{busy=false}
+}
+// ---- Bảng phân tích ----
+function analyzeUI(soft){
+ if(!D.length)return;
+ A=analyze(D,tf);const x=A,pc=v=>v.toFixed(0)+'%';
+ const key=[x.mode,x.cur,x.ev.map(e=>e.k+e.i).join(),x.sig.title,hold&&hold.cost,ctxs.length,Object.values(x.prob).map(v=>Math.round(v/5)).join()].join('|');
+ if(soft&&key===lastKey&&Date.now()-lastPanel<5000)return;
+ lastKey=key;lastPanel=Date.now();
+ const mN={acc:'Tích lũy (Accumulation)',dist:'Phân phối (Distribution)',tup:'Xu hướng tăng (Markup)',tdown:'Xu hướng giảm (Markdown)'}[x.mode];
+ const trN={up:['Tăng','up'],down:['Giảm','dn'],side:['Đi ngang','ne']}[x.tr];
+ const top=Object.entries(x.prob).sort((a,b)=>b[1]-a[1])[0][0];
+ const sN={up:'Tăng / bứt phá lên',side:'Đi ngang trong range',down:'Giảm / thủng hỗ trợ'},sC={up:'var(--g)',side:'var(--y)',down:'var(--r)'};
+ const evs=x.ev.map(e=>'<span class="pill">'+evName(e.k,x.mode)+(e.weak?'?':'')+' '+fmtD(D[e.i].t)+'</span>').join('')||'<span class="mu">Chưa nhận diện được sự kiện</span>';
+ const ph=x.P.map(p=>'<span class="pill">Phase '+(p.lab||p.n)+'</span>').join('');
+ const sg=x.sig,cls=sg.t==='buy'?'buy up':sg.t==='sell'?'sell dn':'ne';
+ const st=$('#side').scrollTop;
+ $('#side').innerHTML=(src==='demo'?'<div class="warn">DỮ LIỆU MẪU: chỉ để thử phần mềm, không phải thị trường thật.</div>':'')+
+ qaCard(x)+'<div class="card"><h3>'+sym+' ['+TFN2[tf]+'] • Giá '+f2(x.c)+'</h3><div>Cấu trúc: <b>'+mN+'</b></div><div>Xu hướng: <b class="'+trN[1]+'">'+trN[0]+'</b> (MA20 '+f2(x.s20)+', MA50 '+f2(x.s50)+')</div>'+
+ (x.cur?'<div>Giai đoạn hiện tại: <b>Phase '+(x.curLab||x.cur)+'</b>'+(x.failedBreak?' <span class="dn">(breakout thất bại: giá đã quay lại trong range)</span>':'')+'</div>':'')+'<div class="mu">Hỗ trợ '+f2(x.sup)+' • Kháng cự '+f2(x.res)+(x.rng?' • Range '+x.rng.W+' nến':'')+'</div><div style="margin-top:6px">'+ph+'</div><div style="margin-top:4px">'+evs+'</div></div>'+
+ '<div class="card"><h3>Lực mua / lực bán</h3><div class="mu">20 phiên gần nhất</div><div class="bar"><i style="width:'+x.pr.b20+'%;background:var(--g)"></i><i style="width:'+(100-x.pr.b20)+'%;background:var(--r)"></i></div>'+
+ '<div><span class="up">Mua '+pc(x.pr.b20)+'</span> / <span class="dn">Bán '+pc(100-x.pr.b20)+'</span> <span class="mu">(10 phiên: '+pc(x.pr.b10)+' • 60 phiên: '+pc(x.pr.b60)+')</span></div><p style="margin:6px 0 0">'+x.pr.er+'</p></div>'+
+ '<div class="card"><h3>Khối lượng &amp; phe mua/bán</h3><div>Khối lượng 5 phiên gần nhất: <b>'+x.pr.vr5.toFixed(2)+'x</b> trung bình 50 phiên '+(x.pr.vr5>1.3?'(đột biến)':x.pr.vr5<0.75?'(cạn kiệt)':'(bình thường)')+'</div><div>Khối lượng phiên tăng / giảm (20 phiên): <span class="up">'+(x.pr.uv/1e6).toFixed(1)+'M</span> / <span class="dn">'+(x.pr.dv/1e6).toFixed(1)+'M</span></div><div>Dòng tiền OBV 40 phiên: <b class="'+(x.pr.obv>0?'up':'dn')+'">'+(x.pr.obv>0?'dương (phe mua tích lũy)':'âm (phe bán chiếm ưu thế)')+'</b></div><p style="margin:6px 0 0"><b>Phe kiểm soát: </b>'+(x.pr.b20>57&&x.pr.uv>x.pr.dv?'<span class="up">PHE MUA</span> (lực mua '+pc(x.pr.b20)+')':x.pr.b20<43&&x.pr.dv>x.pr.uv?'<span class="dn">PHE BÁN</span> (lực bán '+pc(100-x.pr.b20)+')':'<span class="ne">CÂN BẰNG / GIẰNG CO</span>')+'</p></div>'+
+ '<div class="card"><h3>Cung - Cầu &amp; ý đồ Smart Money (VSA)</h3><div>Cung (bán): <b class="'+({dry:'up',more:'dn',neu:'ne'}[x.sd.sup])+'">'+({dry:'CẠN KIỆT',more:'CÒN MẠNH',neu:'trung tính'}[x.sd.sup])+'</b> • Cầu (mua): <b class="'+({dry:'dn',strong:'up',neu:'ne'}[x.sd.dem])+'">'+({dry:'CẠN KIỆT / YẾU',strong:'MẠNH',neu:'trung tính'}[x.sd.dem])+'</b></div><ul>'+x.sd.ev.map(t=>'<li>'+t+'</li>').join('')+'</ul>'+intent(x)+'</div>'+
+ '<div class="card"><h3>Dự đoán xu hướng tiếp theo</h3>'+['up','side','down'].map(k=>'<div class="sc"><span class="n" style="color:'+sC[k]+'">'+sN[k]+'</span><div class="bg"><i style="width:'+x.prob[k]+'%;background:'+sC[k]+'"></i></div><b>'+pc(x.prob[k])+'</b></div>').join('')+
+ '<p style="margin:6px 0 0">Kịch bản chính: <b style="color:'+sC[top]+'">'+sN[top]+'</b>. Mục tiêu tăng ~'+f2(x.tgtUp)+' • giảm ~'+f2(x.tgtDn)+' (Quy luật Nhân - Quả).</p></div>'+
+ '<div class="card sig '+sg.t+'"><h3>Cảnh báo điểm mua / bán</h3><div class="'+cls+'" style="font-weight:700">'+sg.title+'</div><ul>'+sg.d.map(s=>'<li>'+s+'</li>').join('')+'</ul></div>'+
+ (x.story.length?'<div class="card"><h3>Wyckoff Story</h3>'+x.story.map(s=>'<div class="story"><b>#'+s.n+'</b> '+s.t+'</div>').join('')+'</div>':'')+
+ kpCard(x)+ctxCard()+'<p class="mu" style="font-size:12px">Tham khảo kỹ thuật, không phải khuyến nghị đầu tư. Xác suất là điểm số heuristic theo cấu trúc Wyckoff.</p>';
+ $('#side').scrollTop=st;
+}
+function intent(x){
+ const L=[],H=x.H,sp=x.ev.find(e=>e.k==='SP'),st=x.ev.filter(e=>e.k==='ST').length;
+ if(x.mode==='acc'){
+  if(x.failedBreak)L.push('Breakout THẤT BẠI: sau Spring và SOS giá không giữ được trên kháng cự cũ/đáy BU nên cầu chưa đủ mạnh để đẩy giá. Smart money có thể tiếp tục hấp thụ (tái tích lũy) hoặc rũ bỏ thêm lần nữa; chỉ xét mua lại khi có Spring/Test mới ở vùng hỗ trợ '+f2(x.sup)+' với khối lượng thấp. Các nhịp No Supply gần đây mới là dấu hiệu sớm, chưa phải tín hiệu mua.');
+  else if((x.cur==='A'||x.cur==='B')&&!sp)L.push('Smart money đang HẤP THỤ (gom) nguồn cung quanh hỗ trợ, vùng gom '+f2(x.sup)+' - '+f2(x.sup+0.35*H)+'. Chưa phải lúc mua: chờ Phase C (Spring).');
+  if(sp)L.push('RŨ BỎ: Spring #'+sp.type+' ngày '+fmtD(D[sp.i].t)+' kéo giá thủng hỗ trợ '+f2(x.sup)+' để nhà đầu tư nhỏ lẻ bán ra, smart money mua gom.');
+  if(x.ev.find(e=>e.k==='TEST'))L.push('KIỂM TRA LẠI: Test ngày '+fmtD(D[x.ev.find(e=>e.k==='TEST').i].t)+' tạo đáy cao hơn với khối lượng thấp: cung đã cạn.');
+  if(x.ev.find(e=>e.k==='JAC')&&!x.failedBreak)L.push('Cầu thắng thế: đã có SOS/JAC; các nhịp LPS/BU là điểm dừng nghỉ để gom thêm trước khi đẩy giá.');
+ }else if(x.mode==='dist'){
+  L.push('Smart money đang PHÂN PHỐI (bán lẻ) trong range '+f2(x.sup)+' - '+f2(x.res)+': khối lượng cao ở nhịp giảm là bằng chứng.');
+  if(sp)L.push('BẪY TĂNG: UT/UTAD ngày '+fmtD(D[sp.i].t)+' dụ nhà đầu tư mua đuổi trước khi giảm.');
+  if(x.ev.find(e=>e.k==='SOS'))L.push('Cung thắng thế: đã có SOW (thủng hỗ trợ/ICE); nhịp hồi LPSY là điểm bán cuối cùng.');
+ }else L.push(x.mode==='tup'?'Cầu đang kiểm soát (Markup): chỉ mua ở nhịp test khối lượng thấp.':'Cung đang kiểm soát (Markdown): chưa có dấu chân smart money mua vào.');
+ return L.length?'<p style="margin:6px 0 0"><b>Ý đồ:</b> '+L.join(' ')+'</p>':'';
+}
+
+// ---- Hỏi đáp: vị thế của người dùng ----
+function getHold(s0){try{const j=JSON.parse(localStorage.getItem('wy_hold')||'{}');return j[s0]||null}catch(e){return null}}
+function setHoldLS(s0,v){try{const j=JSON.parse(localStorage.getItem('wy_hold')||'{}');if(v)j[s0]=v;else delete j[s0];localStorage.setItem('wy_hold',JSON.stringify(j))}catch(e){}}
+$('#bQA').onclick=()=>{if(!D.length){setSt('Hãy tải dữ liệu trước');return}$('#qaQ').textContent='Bạn mua cổ phiếu '+sym+' giá bao nhiêu? (nghìn đồng, ví dụ 25.5)';$('#qaCost').value=hold?hold.cost:'';$('#qaQty').value=hold&&hold.qty?hold.qty:'';$('#qa').classList.remove('off');$('#qaCost').focus()};
+$('#qaX').onclick=()=>$('#qa').classList.add('off');
+// ===== Lọc cổ phiếu: Tích lũy + Phase C -> danh sách theo dõi (lưu trong máy) =====
+const getWatch=()=>{try{return JSON.parse(localStorage.getItem('wy_watch')||'[]')}catch(e){return[]}};
+const setWatch=a=>{try{localStorage.setItem('wy_watch',JSON.stringify(a))}catch(e){}};
+let scanStop=false,scanRun=false;
+function renderWatch(){const w=getWatch();$('#scCnt').textContent='('+w.length+' mã)';
+ $('#scList').innerHTML=w.length?'<table class="kp"><tr><th>Mã</th><th>Giá</th><th>Hỗ trợ - Kháng cự</th><th>Spring</th><th>Ngày lọc</th><th></th></tr>'+w.map(x=>'<tr><td><a href="#" data-s="'+x.sym+'" style="color:var(--bl);font-weight:700">'+x.sym+'</a></td><td>'+x.price.toFixed(2)+'</td><td>'+x.sup.toFixed(2)+' - '+x.res.toFixed(2)+'</td><td>'+(x.sp?'#'+x.sp:'-')+'</td><td>'+x.date+'</td><td><a href="#" data-d="'+x.sym+'" class="mu">xóa</a></td></tr>').join('')+'</table>':'<span class="mu">Chưa có mã nào. Bấm "Bắt đầu lọc".</span>';
+ $('#scList').querySelectorAll('a[data-s]').forEach(a=>a.onclick=e=>{e.preventDefault();$('#scan').classList.add('off');$('#sym').value=a.dataset.s;tf='D';$('#tf').value='D';load()});
+ $('#scList').querySelectorAll('a[data-d]').forEach(a=>a.onclick=e=>{e.preventDefault();setWatch(getWatch().filter(x=>x.sym!==a.dataset.d));renderWatch()})}
+async function scanOne(s){
+ let j;if(hasPy())j=JSON.parse(await pywebview.api.history_scan(s));
+ else{const to=Math.floor(Date.now()/1000),r=await(await fetch('https://dchart-api.vndirect.com.vn/dchart/history?resolution=D&symbol='+s+'&from='+(to-86400*900)+'&to='+to)).json();j=r;}
+ if(j.s!=='ok'||!j.t||j.t.length<120)return null;
+ const B=toBars(j),L=B[B.length-1];
+ if(Date.now()-L.t>12*86400000)return null;                       // mã ngừng giao dịch
+ if(avg(B.slice(-20).map(b=>b.v))<50000)return null;              // thanh khoản quá thấp
+ const a=analyze(B,'D');
+ if(a.mode==='acc'&&a.cur==='C'&&a.curLab==='C'&&!a.failed&&!a.failedBreak){const sp=a.ev.find(e=>e.k==='SP');return{sym:s,price:L.c,sup:a.sup,res:a.res,sp:sp?sp.type:0,date:new Date().toLocaleDateString('vi-VN')}}
+ return null}
+async function runScan(){
+ if(scanRun)return;scanRun=true;scanStop=false;$('#scGo').disabled=true;$('#scStop').disabled=false;
+ const msg=t=>$('#scMsg').textContent=t;msg('Đang lấy danh sách mã...');
+ let list=[];
+ try{let j;if(hasPy())j=JSON.parse(await pywebview.api.symbols($('#scFloor').value));else{const r=await(await fetch('https://api-finfo.vndirect.com.vn/v4/stocks?q=type:STOCK,IFC~status:LISTED&fields=code&size=3000')).json();j={s:'ok',list:r.data.map(x=>x.code).filter(c=>c.length===3)}}
+  if(j.s!=='ok')throw new Error(j.err);list=j.list}
+ catch(e){msg('Không lấy được danh sách mã: '+(e.message||e));scanRun=false;$('#scGo').disabled=false;$('#scStop').disabled=true;return}
+ let done=0,found=0,idx=0;const hit=[],total=list.length,W=6;
+ const worker=async()=>{while(!scanStop&&idx<total){const s=list[idx++];try{const r=await scanOne(s);if(r){found++;hit.push(r);const w=getWatch().filter(x=>x.sym!==r.sym);w.push(r);w.sort((a,b)=>a.sym<b.sym?-1:1);setWatch(w);renderWatch()}}catch(e){}
+  done++;$('#scBar').style.width=(done/total*100)+'%';msg('Đã quét '+done+'/'+total+' mã • tìm thấy '+found+' mã Tích lũy - Phase C')}};
+ await Promise.all(Array.from({length:W},worker));
+ msg((scanStop?'Đã dừng: ':'Hoàn tất: ')+'quét '+done+'/'+total+' mã, '+found+' mã đang Tích lũy - Phase C (đã lưu vào danh sách theo dõi).');
+ scanRun=false;$('#scGo').disabled=false;$('#scStop').disabled=true}
+$('#bScan').onclick=()=>{renderWatch();$('#scan').classList.remove('off')};
+$('#scGo').onclick=runScan;$('#scStop').onclick=()=>{scanStop=true};$('#scX').onclick=()=>$('#scan').classList.add('off');
+$('#scClr').onclick=()=>{setWatch([]);renderWatch()};
+
+$('#qaClr').onclick=()=>{hold=null;setHoldLS(sym,null);$('#qa').classList.add('off');lastKey='';analyzeUI()};
+$('#qaOk').onclick=()=>{const c=parseFloat(String($('#qaCost').value).replace(',','.')),q=parseFloat(String($('#qaQty').value).replace(/[.,]/g,''));
+ if(!(c>0)){$('#qaQ').textContent='Vui lòng nhập giá mua hợp lệ (số lớn hơn 0).';return}
+ hold={cost:c,qty:q>0?q:0};setHoldLS(sym,hold);$('#qa').classList.add('off');lastKey='';analyzeUI();$('#side').scrollTop=0};
+function qaCard(x){
+ if(!hold)return '<div class="card"><h3>Hỏi đáp - tư vấn vị thế</h3><p style="margin:0">Bấm nút <b>Hỏi đáp</b> trên thanh công cụ, nhập giá bạn đã mua '+sym+' để nhận tư vấn <b>giữ / bán / mua thêm</b> theo cấu trúc Wyckoff hiện tại.</p></div>';
+ const a=advise(D,x,hold.cost,ctxs),col={sell:'dn',buy:'up',hold:'up',wait:'ne'}[a.tone];
+ const lv=(arr,lab)=>arr.length?'<div style="margin-top:6px"><b>'+lab+'</b><ul>'+arr.map(p=>'<li><b>'+f2(p.price)+'</b>: '+p.cond+(p.avg!=null?' <span class="mu">(nếu mua cùng khối lượng, giá vốn mới ~ '+f2(p.avg)+'; chỉ để tham khảo, KHÔNG khuyến khích bình quân xuống)</span>':'')+'</li>').join('')+'</ul></div>':'';
+ return '<div class="card sig '+(a.tone==='sell'?'sell':a.tone==='hold'?'buy':'')+'"><h3>Hỏi đáp - vị thế của bạn ('+sym+')</h3><div class="'+col+'" style="font-weight:700">'+a.act+'</div><ul>'+a.lines.map(t=>'<li>'+t+'</li>').join('')+'</ul>'+
+  (hold.qty?'<div>Lãi/lỗ tạm tính: <b class="'+(a.pl>=0?'up':'dn')+'">'+Math.round((x.c-a.cost)*1000*hold.qty).toLocaleString('vi-VN')+' đ</b></div>':'')+
+  (a.stop?'<div><b>'+a.stopLabel+':</b> <span class="dn">'+f2(a.stop)+'</span></div>':'')+lv(a.adds,'Mua thêm khi nào')+lv(a.takes,'Bán / chốt lời khi nào')+'<ul>'+a.notes.map(t=>'<li class="mu">'+t+'</li>').join('')+'</ul></div>';
+}
+function kpCard(x){
+ const k=x.kp||[];let h='<div class="card"><h3>Điểm mua / bán lớn nhất theo cấu trúc</h3>';
+ const fut=x.mode==='acc'||x.mode==='tup'?'Điểm bán lớn tiềm năng: vùng '+f2(x.tgtUp)+' khi xuất hiện BC (nến rộng, khối lượng cực lớn), Upthrust hoặc No Demand.':x.mode==='dist'?'Điểm mua lớn chỉ xuất hiện sau khi phân phối kết thúc và có Spring.':'Điểm mua lớn chỉ xuất hiện sau Climax, AR, ST rồi Spring.';
+ if(!k.length)return h+'<p style="margin:0">Chưa có điểm vào chuẩn (Spring/Test, LPS, BU, SOS hoặc UT, LPSY, SOW) trong cấu trúc hiện tại. '+fut+'</p></div>';
+ h+='<table class="kp"><tr><th>Điểm</th><th>Ngày</th><th>Vào</th><th>Cắt lỗ</th><th>M.tiêu</th><th>R:R</th></tr>'+k.map(p=>'<tr'+(p.best?' class="best"':'')+'><td>'+(p.best?'★ ':'')+p.lab+'</td><td>'+fmtD(D[p.i].t)+'</td><td>'+f2(p.entry)+'</td><td>'+f2(p.stop)+'</td><td>'+f2(p.tgt)+'</td><td>'+p.rr.toFixed(1)+'</td></tr>').join('')+'</table>';
+ const b=k.find(p=>p.best);if(b)h+='<p style="margin:6px 0 0">★ '+(b.side==='buy'?'<b class="up">Điểm MUA lớn nhất':'<b class="dn">Điểm BÁN lớn nhất')+'</b>: '+b.lab+' ('+fmtD(D[b.i].t)+') - '+b.note+'; tỷ lệ lợi nhuận/rủi ro cao nhất ('+b.rr.toFixed(1)+').</p>';
+ return h+'<p class="mu" style="margin:6px 0 0">'+fut+'</p></div>';
+}
+// ---- Bối cảnh dài hạn: phân tích thêm các khung lớn hơn ----
+const CTXMAP={'1':['D','W'],'5':['D','W'],'15':['D','W'],'30':['D','W'],'60':['D','W'],'D':['W','M'],'W':['M'],'M':[]};let ctxBusy=false;
+async function loadCtx(){
+ if(src!=='live'||!sym||ctxBusy)return;ctxBusy=true;const s0=sym,t0=tf,out=[];
+ try{for(const t of CTXMAP[t0]||[]){try{const b=toBars(await getHist(t));if(b.length<minBars(t))continue;const a=analyze(b,t);out.push({tf:t,name:TFN2[t],mode:a.mode,cur:a.cur,prob:a.prob,sup:a.sup,res:a.res,sig:a.sig.title})}catch(e){}}}
+ finally{ctxBusy=false}
+ if(s0===sym&&t0===tf){ctxs=out;lastKey='';analyzeUI(true)}
+}
+function ctxCard(){
+ if(!ctxs.length)return tf==='M'?'':'<div class="card"><h3>Bối cảnh dài hạn</h3><p class="mu" style="margin:0">Đang tải khung lớn hơn để xem cả quá trình nhiều tháng/năm...</p></div>';
+ const mN={acc:'Tích lũy',dist:'Phân phối',tup:'Xu hướng tăng',tdown:'Xu hướng giảm'};
+ return '<div class="card"><h3>Bối cảnh dài hạn (khung lớn)</h3>'+ctxs.map(c=>'<div style="margin-bottom:6px"><b>Khung '+c.name+':</b> '+mN[c.mode]+(c.cur?' • Phase '+c.cur:'')+' • <span class="up">↑'+c.prob.up.toFixed(0)+'%</span> <span class="ne">↔'+c.prob.side.toFixed(0)+'%</span> <span class="dn">↓'+c.prob.down.toFixed(0)+'%</span><div class="mu">Hỗ trợ '+f2(c.sup)+' • Kháng cự '+f2(c.res)+'<br>'+c.sig+'</div></div>').join('')+'<p class="mu" style="margin:0">Wyckoff đọc từ khung lớn xuống khung nhỏ: tín hiệu mua ở khung nhỏ chỉ đáng tin khi khung lớn không đang phân phối hoặc giảm.</p></div>';
+}
+function demo(){
+ let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const K=[[0,50],[120,31],[125,29.5],[135,35],[160,31],[190,34.5],[215,32],[222,28.6],[228,32],[260,36.5],[272,38.5],[284,36.8],[300,39.5]];
+ const out=[];let t=Date.now()-300*86400000*1.4,p=50;
+ for(let i=0;i<=300;i++){let k=1;while(K[k][0]<i)k++;const[a,pa]=K[k-1],[b,pb]=K[k];const tg=pa+(pb-pa)*(i-a)/(b-a);
+  const o=p,c=tg*(1+(rnd()-0.5)*0.014),hi=Math.max(o,c)*(1+rnd()*0.008),lo=Math.min(o,c)*(1-rnd()*0.008);
+  let v=1e6*(0.7+rnd()*0.6);if(i===125)v=4.5e6;if(i===222)v=1.6e6;if(i===272)v=3.2e6;if(i===160||i===190)v=0.7e6;
+  let L=lo;if(i===222)L=28.6*0.97;if(i===125)L=29.0*0.97;
+  out.push({t,o,h:hi,l:Math.min(L,lo),c,v});p=c;t+=86400000*1.4}
+ return out;
+}
+// ---- Vẽ biểu đồ (phong cách Wyckoff Analytics) ----
+function arrow(g,x0,y0,x1,y1,c){g.strokeStyle=g.fillStyle=c;g.lineWidth=2;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();const a=Math.atan2(y1-y0,x1-x0);g.beginPath();g.moveTo(x1,y1);g.lineTo(x1-9*Math.cos(a-0.4),y1-9*Math.sin(a-0.4));g.lineTo(x1-9*Math.cos(a+0.4),y1-9*Math.sin(a+0.4));g.fill();g.lineWidth=1}
+const FULL={SC:['Selling Climax (SC)','Buying Climax (BC)'],AR:['Automatic Rally (AR)','Automatic Reaction (AR)'],ST:['Secondary Test (ST)','Secondary Test (ST)'],SP:['Spring / Shakeout','Upthrust After Distribution (UTAD)'],TEST:['Test','Test'],SOS:['Sign of Strength (SOS)','Sign of Weakness (SOW) thủng Ice'],MSOS:['Sign of Strength (SOS)','Sign of Weakness (SOW)'],JAC:['Jump Across the Creek (JAC)','Sign of Weakness (SOW)'],UA:['Upthrust Action (UA)','Upthrust (UT)'],UT:['Upthrust (UT)','Upthrust (UT)'],LPS:['Last Point of Support (LPS)','Last Point of Supply (LPSY)'],PS:['Preliminary Support (PS)','Preliminary Supply (PSY)'],BU:['Back Up (BU/BUEC)','Back Up (BU)'],RETEST:['Retest vùng hỗ trợ','Retest vùng kháng cự']};
+function wrapT(g,t,mw){const L=[];let c='';for(const w of t.split(' ')){const x=c?c+' '+w:w;if(g.measureText(x).width>mw&&c){L.push(c);c=w}else c=x}if(c)L.push(c);return L}
+// Biểu đồ báo cáo Wyckoff: nền trắng, hộp Phase, đường ngang/chéo, ghi chú khối lượng, cột Wyckoff Story
+const vw={vis:300,off:0},geo={};
+function zoom(f,fx){
+ if(!D.length)return;const N=D.length-1,old=vw.vis,nv=Math.max(30,Math.min(D.length,Math.round(old*f)));
+ const frac=fx==null?1:Math.max(0,Math.min(1,fx)),E=N-vw.off,n0=E-old+1,idx=n0+frac*old;
+ vw.vis=nv;const n0b=idx-frac*nv;vw.off=Math.max(0,Math.min(N-nv+1,Math.round(N-(n0b+nv-1))));draw()}
+function drawReport(g,w,h){
+ const W=A,N=D.length-1,RW=Math.max(250,Math.min(340,w*0.3)),CW=w-RW,mi=W.mode==='dist'?1:0,FONT='Segoe UI, Arial, sans-serif';
+ vw.vis=Math.min(vw.vis,D.length);vw.off=Math.max(0,Math.min(vw.off,N-vw.vis+1));
+ const E=N-vw.off,n0=Math.max(0,E-vw.vis+1),VIS=E-n0+1,PRJ=vw.off===0?50:0;
+ g.fillStyle='#fff';g.fillRect(0,0,w,h);
+ const L=8,R=54,cw=CW-L-R,tot=VIS+PRJ,bw=cw/tot,T=128;
+ const X=i=>L+(Math.max(i,n0)-n0+0.5)*bw;
+ Object.assign(geo,{n0,bw,L,cw,tot,VIS});
+ // ghi chú khối lượng: xếp hàng, không đè nhau
+ g.font='11px '+FONT;const bxs=[];
+ for(const s of W.story){if(s.b<n0||s.a>E)continue;const a=Math.max(s.a,n0),b=Math.min(s.b,E),x0=X(a),x1=X(b),lines=wrapT(g,s.n+'. '+s.s,142);bxs.push({s,lines,bh:lines.length*13+8,cx:(x0+x1)/2,w:152,x0,x1,a,b})}
+ bxs.sort((p,q)=>p.cx-q.cx);const rows=[];
+ for(const q of bxs){const x=Math.max(L,Math.min(q.cx-q.w/2,CW-R-q.w));let ok=false;
+  for(let r=0;r<rows.length;r++){const xx=Math.max(x,rows[r]+4);if(xx+q.w<=CW-R){q.x=xx;rows[r]=xx+q.w;q.row=r;ok=true;break}}
+  if(!ok){q.x=x;q.row=rows.length;rows.push(x+q.w)}}
+ const mh=bxs.length?Math.max(...bxs.map(q=>q.bh)):0,NB=bxs.length?rows.length*(mh+4)+4:0;
+ let vh=Math.max(90,Math.min(210,h*0.24));
+ if(h-T-NB-vh-36<150)vh=Math.max(60,h-T-NB-186);
+ const ch=h-T-NB-vh-36,yb=h-26,bt=T+ch+8;
+ let lo=Infinity,hi=-Infinity;for(let i=n0;i<=E;i++){lo=Math.min(lo,D[i].l);hi=Math.max(hi,D[i].h)}
+ if(PRJ)for(const k of['up','side','down'])for(const v of W.paths[k]){lo=Math.min(lo,v);hi=Math.max(hi,v)}
+ const pd=(hi-lo)*0.05;lo-=pd;hi+=pd;const Y=v=>T+(hi-v)/(hi-lo)*ch;
+ g.save();g.beginPath();g.rect(0,0,CW,h);g.clip();
+ g.textAlign='center';g.fillStyle='#000';g.font='bold 17px '+FONT;g.fillText(sym+' ('+TFNAME[tf]+')',CW/2,22);
+ g.font='12px '+FONT;g.fillStyle='#333';g.fillText('Phân tích Wyckoff tự động • Giá '+f2(W.c)+' • '+new Date().toLocaleDateString('vi-VN')+' • '+VIS+' nến (lăn chuột để zoom, kéo để di chuyển)',CW/2,40);g.textAlign='left';
+ g.font='11px '+FONT;for(let k=0;k<=8;k++){const v=lo+(hi-lo)*k/8,y=Y(v);g.strokeStyle='#eee';g.beginPath();g.moveTo(L,y);g.lineTo(CW-R,y);g.stroke();g.fillStyle='#555';g.fillText(v.toFixed(2),CW-R+4,y+4)}
+ for(let i=n0;i<=E;i++){const b=D[i],up=b.c>=b.o,x=X(i);g.strokeStyle=g.fillStyle=up?'#7a7a7a':'#d94a4a';g.beginPath();g.moveTo(x,Y(b.h));g.lineTo(x,Y(b.l));g.stroke();const y1=Y(Math.max(b.o,b.c)),y2=Y(Math.min(b.o,b.c));g.fillRect(x-bw*0.34,y1,bw*0.68,Math.max(1,y2-y1))}
+ // nhãn nến VSA (No Demand, Upthrust, Weakness, Reverse UT, No Supply...)
+ {const nm={WeakA:'WkA',NoDemand:'ND',WeakB:'WkB',Upthrust:'UT',ReverseUT:'RUT',NoSupply:'NS',StopVol:'SV',Test:'T',PowerA:'PwA'},weak=['WeakA','NoDemand','WeakB','Upthrust'],all=bw>=3.2;
+  g.font='bold 9px '+FONT;g.textAlign='center';
+  for(let i=Math.max(1,all?n0:E-60);i<=E;i++){const tg=vsaTags(D,i);if(!tg.length||!nm[tg[0]])continue;const w2=weak.includes(tg[0]);g.fillStyle=w2?'#b03a2e':'#1e8449';g.fillText(nm[tg[0]],X(i),w2?Y(D[i].h)-3:Y(D[i].l)+11)}
+  g.textAlign='left'}
+ // khối lượng (khung lớn)
+ const vm=Math.max(...D.slice(n0,E+1).map(b=>b.v))||1,vy=v=>yb-v/vm*(vh-6);
+ for(let i=n0;i<=E;i++){const b=D[i];g.fillStyle=b.c>=b.o?'#8f8f8f':'#e07c7c';g.fillRect(X(i)-bw*0.34,vy(b.v),Math.max(1,bw*0.68),yb-vy(b.v))}
+ g.strokeStyle='#999';g.beginPath();g.moveTo(L,yb);g.lineTo(CW-R,yb);g.stroke();
+ g.fillStyle='#555';g.font='11px '+FONT;g.fillText('Khối lượng',L+2,yb-vh+8);
+ for(let k=1;k<=3;k++){const v=vm*k/3,y=vy(v);g.strokeStyle='#eee';g.beginPath();g.moveTo(L,y);g.lineTo(CW-R,y);g.stroke();g.fillStyle='#777';g.fillText((v/1e6>=1?(v/1e6).toFixed(1)+'M':Math.round(v/1e3)+'K'),CW-R+4,y+4)}
+ const step=Math.max(5,Math.round((isIntra()?100:62)/bw));for(let i=n0;i<=E;i+=step){g.fillStyle='#555';g.fillText(fmtD(D[i].t),X(i)-16,h-10)}
+ const ev=k=>W.ev.find(x=>x.k===k),sos=ev(W.mode==='dist'?'SOS':'JAC');
+ // đường range: ngang (đen) hoặc chéo (kênh song song)
+ if(W.rng){const{s,e}=W.rng,n=e-s+1;let sx=0,sy=0,sxy=0,sxx=0;for(let i=s;i<=e;i++){const x=i-s,y=D[i].c;sx+=x;sy+=y;sxy+=x*y;sxx+=x*x}
+  const m=(n*sxy-sx*sy)/(n*sxx-sx*sx||1),b0=(sy-m*sx)/n,ln=i=>b0+m*(i-s),mean=sy/n,sloped=Math.abs(m*n)/mean>0.08;
+  const xs=Math.max(s,n0),xe=Math.min(E,sos?sos.i+14:N);
+  if(xe>xs){g.strokeStyle='#000';g.lineWidth=2;
+   if(sloped){let up=-Infinity,dn=Infinity;for(let i=s;i<=e;i++){up=Math.max(up,D[i].h-ln(i));dn=Math.min(dn,D[i].l-ln(i))}
+    for(const off of[up,dn]){g.beginPath();g.moveTo(X(xs),Y(ln(xs)+off));g.lineTo(X(xe),Y(ln(xe)+off));g.stroke()}
+    g.setLineDash([6,5]);g.strokeStyle='#2f6fd6';g.lineWidth=1.3;g.beginPath();g.moveTo(X(xs),Y(ln(xs)+(up+dn)/2));g.lineTo(X(xe),Y(ln(xe)+(up+dn)/2));g.stroke();g.setLineDash([])}
+   else for(const v of[W.res,W.sup]){g.beginPath();g.moveTo(X(xs),Y(v));g.lineTo(X(xe),Y(v));g.stroke()}
+   g.lineWidth=1}
+  if(sos&&sos.i-6<=E){const v=W.mode==='dist'?W.sup:W.res;g.setLineDash([6,5]);g.strokeStyle='#000';g.lineWidth=1.3;g.beginPath();g.moveTo(X(sos.i-6),Y(v));g.lineTo(CW-R,Y(v));g.stroke();g.setLineDash([]);g.lineWidth=1}}
+ // hộp Phase (so le khi hẹp) + vạch ngăn
+ let lastR=[-1e9,-1e9,-1e9];
+ W.P.forEach((p,pi)=>{if(p.b<n0||p.a>E)return;const a=Math.max(p.a,n0),b=Math.min(p.b,E),cx=(X(a)+X(b))/2,row0=lastR.findIndex(v=>v<=cx-46),row=row0<0?lastR.indexOf(Math.min(...lastR)):row0,by=52+row*24;lastR[row]=cx+46;
+  g.fillStyle='#fdf0c4';g.fillRect(cx-44,by,88,22);g.fillStyle='#000';g.font='13px '+FONT;g.textAlign='center';g.fillText('Phase |'+(p.lab||p.n)+'|',cx,by+16);g.textAlign='left';
+  if(pi<W.P.length-1&&p.b<=E){const xe=X(p.b)+bw/2;g.strokeStyle='#000';g.lineWidth=2;g.beginPath();g.moveTo(xe,by+24);g.lineTo(xe,T+ch);g.stroke();g.lineWidth=1}});
+ // nhãn sự kiện
+ const placed=[];g.font='bold 12px '+FONT;
+ for(const e of W.ev){if(e.i<n0||e.i>E)continue;const b=D[e.i],below=['SC','ST','UT','SP','TEST','LPS','PS','BU','RETEST'].includes(e.k)!==(W.mode==='dist'),nm=(e.k==='SC'&&e.weak)?(mi?'BC? (chưa có climax điển hình)':'SC? (chưa có climax điển hình)'):e.k==='SP'?(mi?'UTAD #'+e.type:'Spring #'+e.type):(e.k==='ST'&&e.pierce)?(mi?'Upthrust (UT)':'ST (thủng hỗ trợ)'):FULL[e.k][mi],lines=wrapT(g,nm,118),lh=14,hb=lines.length*lh,wb=Math.max(...lines.map(l=>g.measureText(l).width));
+  const x=Math.min(Math.max(X(e.i),L+wb/2+2),CW-R-wb/2-2);let y=below?Y(b.l)+8:Y(b.h)-8-hb,t=0;
+  const rc=()=>({a:x-wb/2,b:x+wb/2,c:y,d:y+hb}),hit=()=>{const r=rc();return placed.some(q=>!(q.b<r.a||q.a>r.b||q.d<r.c||q.c>r.d))};
+  while(t<14&&hit()){y+=below?lh:-lh;t++}
+  placed.push(rc());g.fillStyle='#000';g.textAlign='center';lines.forEach((l,j)=>g.fillText(l,x,y+lh*(j+1)-3));g.textAlign='left';
+  if(t>0){g.strokeStyle='#666';g.beginPath();g.moveTo(X(e.i),below?Y(b.l)+2:Y(b.h)-2);g.lineTo(x,below?y:y+hb);g.stroke()}}
+ // hộp ghi chú khối lượng + mũi tên/vạch có đánh số
+ g.font='11px '+FONT;
+ for(const q of bxs){const s=q.s,av=avg(D.slice(q.a,q.b+1).map(b=>b.v));
+  if(s.arrow){const c=s.col==='r'?'#d33':'#2e9e5b';arrow(g,q.x0,vy(s.arrow[0]),Math.max(q.x1,q.x0+14),vy(s.arrow[1]),c)}
+  else{g.strokeStyle='#2f6fd6';g.lineWidth=3;g.beginPath();g.moveTo(q.x0,vy(av));g.lineTo(Math.max(q.x1,q.x0+10),vy(av));g.stroke();g.lineWidth=1}
+  g.fillStyle='#fff';g.strokeStyle='#d33';g.beginPath();g.arc(q.x0+2,vy(av)-12,8,0,7);g.fill();g.stroke();g.fillStyle='#000';g.font='bold 10px '+FONT;g.textAlign='center';g.fillText(s.n,q.x0+2,vy(av)-8);g.textAlign='left';g.font='11px '+FONT;
+  const y=bt+q.row*(mh+4);g.fillStyle='#fff';g.fillRect(q.x,y,q.w,q.bh);g.strokeStyle='#d33';g.strokeRect(q.x,y,q.w,q.bh);g.fillStyle='#000';q.lines.forEach((l,j)=>g.fillText(l,q.x+5,y+13+j*13))}
+ // dự phóng 50 phiên
+ if(PRJ){const x0=X(N),sty={up:['#1e9e57',W.prob.up],side:['#c99a00',W.prob.side],down:['#d33',W.prob.down]},top=Object.entries(W.prob).sort((a,b)=>b[1]-a[1])[0][0];
+  g.fillStyle='#00000008';g.fillRect(x0,T,CW-R-x0,ch);g.fillStyle='#666';g.font='11px '+FONT;g.fillText('Dự phóng 50 phiên',x0+6,T+14);
+  for(const q of['up','side','down']){const[c,p]=sty[q],path=W.paths[q];g.strokeStyle=c;g.lineWidth=q===top?3:1.5;g.setLineDash(q===top?[]:[5,4]);g.beginPath();g.moveTo(x0,Y(D[N].c));path.forEach((v,i)=>g.lineTo(x0+(i+1)*bw,Y(v)));g.stroke();g.setLineDash([]);g.lineWidth=1;g.fillStyle=c;g.font='bold 11px '+FONT;g.fillText(p.toFixed(0)+'%',Math.min(x0+50*bw+2,CW-R-30),Y(path[49])+4)}}
+ g.restore();
+ // cột bên phải
+ const rx=CW+6,rw=RW-14,acc=W.mode==='acc',dist=W.mode==='dist';
+ g.fillStyle=acc?'#b7d7a8':dist?'#ea9999':'#d9d9d9';g.fillRect(rx+10,10,rw-10,34);g.fillStyle='#000';g.font='bold 17px '+FONT;g.textAlign='center';
+ g.fillText(acc?(W.failedBreak?'ACCUMULATION (THẤT BẠI)':'ACCUMULATION'):dist?(W.failedBreak?'DISTRIBUTION (THẤT BẠI)':'DISTRIBUTION'):(W.mode==='tup'?'MARKUP':'MARKDOWN'),rx+10+(rw-10)/2,33);g.textAlign='left';
+ g.fillStyle='#1f6fd0';g.font='bold 13px '+FONT;g.fillText('WYCKOFF STORY: '+sym,rx,66);
+ const items=W.story.length?W.story:[{n:1,t:'Chưa nhận diện được cấu trúc range tích lũy/phân phối. '+W.sig.d[0]}];
+ let fs=12,boxes;for(;fs>=9;fs--){g.font=fs+'px '+FONT;boxes=items.map(s=>{const ls=wrapT(g,'#'+s.n+' '+s.t,rw-14);return{ls,h:ls.length*(fs+3)+8}});if(boxes.reduce((a,b)=>a+b.h+6,0)<=h-84-24)break}
+ let yy=78;g.font=fs+'px '+FONT;boxes.forEach(b=>{g.fillStyle='#fff';g.fillRect(rx,yy,rw,b.h);g.strokeStyle='#d33';g.strokeRect(rx,yy,rw,b.h);g.fillStyle='#000';b.ls.forEach((l,j)=>g.fillText(l,rx+6,yy+fs+3+j*(fs+3)));yy+=b.h+6});
+ g.fillStyle='#555';g.font='11px '+FONT;g.fillText('© Bản quyền: HOÀNG THÂN THIỆN',L,h-3);g.textAlign='right';g.fillText('Tham khảo kỹ thuật, không phải khuyến nghị đầu tư',w-8,h-3);g.textAlign='left';
+}
+function draw(){
+ const cv=$('#cv');if(view==='fa')return;
+ const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
+ cv.width=w*dpr;cv.height=h*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);g.fillStyle='#0b0f14';g.fillRect(0,0,w,h);
+ if(!D.length){g.fillStyle='#8a97a6';g.font='15px Segoe UI';g.fillText('Nhập mã và bấm "Tải dữ liệu"',20,30);return}
+ if(showW&&A){drawReport(g,w,h);return}
+ const W=showW&&A?A:null,VIS=Math.min(D.length,340),PRJ=W?50:0,n0=D.length-VIS;
+ const L=10,R=62,T=W?58:26,Bv=W?120:70,ch=h-T-Bv-22,cw=w-L-R,tot=VIS+PRJ,bw=cw/tot;
+ let lo=Infinity,hi=-Infinity;for(let i=n0;i<D.length;i++){lo=Math.min(lo,D[i].l);hi=Math.max(hi,D[i].h)}
+ if(W){for(const k of['up','side','down'])for(const v of W.paths[k]){lo=Math.min(lo,v);hi=Math.max(hi,v)}}
+ const pad=(hi-lo)*0.06;lo-=pad;hi+=pad;
+ const X=i=>L+(Math.max(i,n0)-n0+0.5)*bw,Y=v=>T+(hi-v)/(hi-lo)*ch;
+ g.font='11px Segoe UI';g.textAlign='left';
+ for(let k=0;k<=8;k++){const v=lo+(hi-lo)*k/8,y=Y(v);g.strokeStyle='#1b232d';g.beginPath();g.moveTo(L,y);g.lineTo(w-R,y);g.stroke();g.fillStyle='#8a97a6';g.fillText(v.toFixed(2),w-R+4,y+4)}
+ const col={A:'#e5534b',B:'#8a97a6',C:'#e3b341',D:'#4c9aff',E:'#26a669'};
+ if(W)for(const p of W.P){if(p.b<n0)continue;const x0=X(p.a)-bw/2,x1=X(p.b)+bw/2;g.fillStyle=col[p.n]+'1c';g.fillRect(x0,T,x1-x0,ch)}
+ // nến
+ for(let i=n0;i<D.length;i++){const b=D[i],up=b.c>=b.o,x=X(i);g.strokeStyle=g.fillStyle=up?'#26a669':'#e5534b';g.beginPath();g.moveTo(x,Y(b.h));g.lineTo(x,Y(b.l));g.stroke();const y1=Y(Math.max(b.o,b.c)),y2=Y(Math.min(b.o,b.c));g.fillRect(x-bw*0.35,y1,bw*0.7,Math.max(1,y2-y1))}
+ g.lineWidth=1.2;for(const[k,c]of[[20,'#e3b341'],[50,'#4c9aff']]){g.strokeStyle=c;g.beginPath();for(let i=n0;i<D.length;i++){const v=sma(D,k,i),x=X(i);i===n0?g.moveTo(x,Y(v)):g.lineTo(x,Y(v))}g.stroke()}g.lineWidth=1;
+ g.fillStyle='#8a97a6';for(let i=n0;i<D.length;i+=20)g.fillText(fmtD(D[i].t),X(i)-18,h-8);
+ // khối lượng
+ const vm=Math.max(...D.slice(n0).map(b=>b.v))||1,vy=v=>h-22-v/vm*(Bv-10);
+ for(let i=n0;i<D.length;i++){const b=D[i];g.fillStyle=b.c>=b.o?'#26a66977':'#e5534b77';g.fillRect(X(i)-bw*0.35,vy(b.v),bw*0.7,h-22-vy(b.v))}
+ const last=D[D.length-1];g.fillStyle='#fff';g.font='11px Segoe UI';g.fillText(sym+'  O '+f2(last.o)+'  H '+f2(last.h)+'  L '+f2(last.l)+'  C '+f2(last.c)+'  KL '+Math.round(last.v).toLocaleString(),L+4,W?T-8:14);
+ const yc=Y(last.c);g.fillStyle=last.c>=last.o?'#26a669':'#e5534b';g.fillRect(w-R,yc-8,R-2,16);g.fillStyle='#fff';g.fillText(f2(last.c),w-R+4,yc+4);
+ if(!W)return;
+ // kênh Wyckoff (hồi quy tuyến tính, 2 đường song song + đường giữa)
+ if(W.rng){const{s,e}=W.rng,n=e-s+1;let sx=0,sy=0,sxy=0,sxx=0;for(let i=s;i<=e;i++){const x=i-s,y=D[i].c;sx+=x;sy+=y;sxy+=x*y;sxx+=x*x}
+  const m=(n*sxy-sx*sy)/(n*sxx-sx*sx||1),b0=(sy-m*sx)/n,ln=i=>b0+m*(i-s);
+  let up=-Infinity,dn=Infinity;for(let i=s;i<=e;i++){up=Math.max(up,D[i].h-ln(i));dn=Math.min(dn,D[i].l-ln(i))}
+  const xs=Math.max(s,n0),line=(off,dash,c,wd)=>{g.setLineDash(dash);g.strokeStyle=c;g.lineWidth=wd;g.beginPath();g.moveTo(X(xs),Y(ln(xs)+off));g.lineTo(X(e),Y(ln(e)+off));g.stroke();g.setLineDash([]);g.lineWidth=1};
+  line(up,[],'#f2f2f2',2);line(dn,[],'#f2f2f2',2);line((up+dn)/2,[6,5],'#d0d0d0',1.2);
+  g.fillStyle='#d0d0d0';g.font='italic 11px Segoe UI';g.fillText('Secondary Tests / Trading Range',X(xs)+10,Y(ln(xs)+(up+dn)/2)+14)}
+ // hỗ trợ / kháng cự ngang
+ for(const[v,c,t]of[[W.res,'#e5534b','Kháng cự '],[W.sup,'#26a669','Hỗ trợ ']]){g.strokeStyle=c+'aa';g.setLineDash([3,5]);g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-R,Y(v));g.stroke();g.setLineDash([]);g.fillStyle=c;g.font='bold 11px Segoe UI';g.fillText(t+f2(v),w-R-100,Y(v)-4)}
+ // tiêu đề Phase + vạch ngăn
+ let k=0;for(const p of W.P){if(p.b<n0)continue;const cx=(X(p.a)+X(p.b))/2,bx=22,by=6+(k++%2)*26;
+  g.fillStyle='#f3d98a';g.fillRect(cx-46,by,92,22);g.fillStyle='#222';g.font='13px Segoe UI';g.textAlign='center';g.fillText('Phase |'+p.n+'|',cx,by+16);g.textAlign='left';
+  const xe=X(p.b)+bw/2;if(p!==W.P[W.P.length-1]){g.strokeStyle='#ffffffcc';g.lineWidth=2;g.beginPath();g.moveTo(xe,by+22);g.lineTo(xe,T+ch);g.stroke();g.lineWidth=1}}
+ // sự kiện
+ for(const e of W.ev){if(e.i<n0)continue;const b=D[e.i],below=['SC','ST','UT','SP','TEST','LPS','PS','BU','RETEST'].includes(e.k)!==(W.mode==='dist'),x=X(e.i),y=below?Y(b.l)+16:Y(b.h)-9;
+  g.font='bold 14px Segoe UI';g.textAlign='center';g.fillStyle='#fff';g.fillText(evName(e.k,W.mode),x,y);g.textAlign='left';
+  g.strokeStyle='#fff';g.beginPath();g.moveTo(x,below?Y(b.l)+2:Y(b.h)-2);g.lineTo(x,below?y-13:y+3);g.stroke()}
+ // chú thích khối lượng đánh số (khớp Wyckoff Story)
+ for(const s of W.story){if(s.b<n0)continue;const a=Math.max(s.a,n0),x0=X(a),x1=X(s.b),c=s.col==='g'?'#26a669':s.col==='r'?'#e5534b':'#e3b341';
+  if(s.arrow)arrow(g,x0,vy(s.arrow[0]),x1,vy(s.arrow[1]),c);
+  else{const av=avg(D.slice(a,s.b+1).map(b=>b.v));g.strokeStyle=c;g.lineWidth=3;g.beginPath();g.moveTo(x0,vy(av));g.lineTo(Math.max(x1,x0+8),vy(av));g.stroke();g.lineWidth=1}
+  const cy=h-22-(Bv-10)-2;g.fillStyle='#0b0f14';g.strokeStyle=c;g.beginPath();g.arc(x0+8,cy+10,9,0,7);g.fill();g.stroke();g.fillStyle='#fff';g.font='bold 11px Segoe UI';g.textAlign='center';g.fillText(s.n,x0+8,cy+14);g.textAlign='left'}
+ // dự phóng 50 phiên
+ const x0=X(D.length-1),sty={up:['#26a669',W.prob.up],side:['#e3b341',W.prob.side],down:['#e5534b',W.prob.down]},top=Object.entries(W.prob).sort((a,b)=>b[1]-a[1])[0][0];
+ g.fillStyle='#ffffff0a';g.fillRect(x0,T,cw-(x0-L),ch);g.fillStyle='#8a97a6';g.font='11px Segoe UI';g.fillText('Dự phóng 50 phiên',x0+6,T+14);
+ for(const kk of['up','side','down']){const[c,p]=sty[kk],path=W.paths[kk];g.strokeStyle=c;g.lineWidth=kk===top?3:1.5;g.setLineDash(kk===top?[]:[5,4]);g.beginPath();g.moveTo(x0,Y(last.c));path.forEach((v,i)=>g.lineTo(x0+(i+1)*bw,Y(v)));g.stroke();g.setLineDash([]);g.lineWidth=1;
+  g.fillStyle=c;g.font='bold 11px Segoe UI';g.fillText(p.toFixed(0)+'%',Math.min(x0+50*bw+2,w-R-34),Y(path[49])+4)}
+}
+window.addEventListener('resize',draw);
+$('#bZi').onclick=()=>zoom(1/1.3);$('#bZo').onclick=()=>zoom(1.3);$('#bAll').onclick=()=>{vw.vis=D.length;vw.off=0;draw()};
+$('#bZr').onclick=()=>{vw.vis=300;vw.off=0;draw()};
+{const cv=$('#cv');let drag=null;
+ cv.addEventListener('wheel',e=>{if(!showW||!A)return;e.preventDefault();const r=cv.getBoundingClientRect();zoom(e.deltaY<0?1/1.18:1.18,Math.max(0,Math.min(1,(e.clientX-r.left-geo.L)/(geo.bw*geo.VIS))))},{passive:false});
+ cv.addEventListener('mousedown',e=>{if(showW&&A)drag={x:e.clientX,off:vw.off}});
+ window.addEventListener('mouseup',()=>{drag=null});
+ window.addEventListener('mousemove',e=>{if(!drag||!geo.bw)return;const N=D.length-1,d=Math.round((e.clientX-drag.x)/geo.bw),no=Math.max(0,Math.min(N-vw.vis+1,drag.off+d));if(no!==vw.off){vw.off=no;draw()}});
+ cv.addEventListener('dblclick',()=>{vw.vis=300;vw.off=0;draw()});cv.style.cursor='grab'}
+//==END==
+
+// ===== Cảm ứng: kéo 1 ngón = di chuyển, 2 ngón = phóng to/thu nhỏ =====
+(function(){let t0=null;const dist=e=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+ cv.addEventListener('touchstart',e=>{if(!showW||!A)return;if(e.touches.length===1)t0={m:'p',x:e.touches[0].clientX,off:vw.off};else if(e.touches.length===2)t0={m:'z',d:dist(e),vis:vw.vis}},{passive:true});
+ cv.addEventListener('touchmove',e=>{if(!t0||!geo.bw)return;e.preventDefault();
+  if(t0.m==='p'&&e.touches.length===1){const N=D.length-1,d=Math.round((e.touches[0].clientX-t0.x)/geo.bw),no=Math.max(0,Math.min(N-vw.vis+1,t0.off+d));if(no!==vw.off){vw.off=no;draw()}}
+  else if(t0.m==='z'&&e.touches.length===2){const f=t0.d/dist(e),want=Math.max(20,Math.min(D.length,Math.round(t0.vis*f)));if(want!==vw.vis){zoom(want/vw.vis,0.5);t0.vis=vw.vis;t0.d=dist(e)}}},{passive:false});
+ cv.addEventListener('touchend',()=>{t0=null});
+})();
+$('#bCfg').onclick=()=>{$('#cfgUrl').value=localStorage.getItem('wy_proxy')||'';$('#cfgMsg').textContent='';$('#cfg').classList.remove('off')};
+$('#cfgX').onclick=()=>$('#cfg').classList.add('off');
+$('#cfgOk').onclick=()=>{localStorage.setItem('wy_proxy',$('#cfgUrl').value.trim());localStorage.removeItem('wy_mode');$('#cfgMsg').textContent='Đã lưu. Hãy tải lại trang (kéo xuống để làm mới) rồi bấm Tải dữ liệu.'};
+$('#cfgTest').onclick=async()=>{const m=$('#cfgMsg');m.textContent='Đang thử...';try{const j=JSON.parse(await pywebview.api.history('VNM','D'));m.textContent=j.s==='ok'?'Kết nối OK ('+j.src+', '+j.t.length+' nến)':'Lỗi: '+j.err}catch(e){m.textContent='Lỗi: '+(e.message||e)}};
+if(window.matchMedia('(max-width:860px)').matches){showW=true;showTab('wy')}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>

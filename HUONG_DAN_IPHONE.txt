@@ -1,0 +1,34 @@
+WYCKOFF VN CHO IPHONE (bản web, cài như ứng dụng)  -  © HOÀNG THÂN THIỆN
+=========================================================================
+Thư mục này gồm: index.html, manifest.json, sw.js, icon-*.png  (ứng dụng)  và  worker.js (máy chủ chuyển tiếp dữ liệu, không bắt buộc).
+
+BƯỚC 1 - Đưa ứng dụng lên web (miễn phí, GitHub Pages)
+1. Tạo tài khoản https://github.com  ->  New repository  -> đặt tên "wyckoff", chọn Public -> Create.
+2. Bấm "uploading an existing file", kéo thả TOÀN BỘ file trong thư mục PWA (index.html, manifest.json, sw.js, 3 file icon, worker.js) -> Commit changes.
+   (Chỉ cần các file đó; địa chỉ web này công khai nhưng không chứa dữ liệu cá nhân.)
+3. Vào Settings -> Pages -> Source: "Deploy from a branch" -> Branch: main, thư mục /(root) -> Save.
+4. Chờ 1-2 phút, địa chỉ sẽ là  https://<tên-github-của-bạn>.github.io/wyckoff/
+
+BƯỚC 2 - Cài lên iPhone
+1. Mở địa chỉ trên bằng Safari (bắt buộc Safari).
+2. Bấm nút Chia sẻ (hình vuông có mũi tên) -> "Thêm vào Màn hình chính" -> Thêm.
+3. Mở biểu tượng "Wyckoff VN" ngoài màn hình chính: ứng dụng chạy toàn màn hình.
+
+BƯỚC 3 - Kiểm tra dữ liệu
+Nhập mã (ví dụ VNM) -> "Tải dữ liệu".
+- Nếu hiện biểu đồ: xong, không cần bước 4.
+- Nếu báo "bị chặn truy cập nguồn dữ liệu (CORS)": làm bước 4.
+
+BƯỚC 4 - (Chỉ khi cần) Tạo Cloudflare Worker miễn phí
+1. Đăng ký https://dash.cloudflare.com (miễn phí) -> Workers & Pages -> Create -> Create Worker -> đặt tên (ví dụ wyckoff) -> Deploy.
+2. Bấm "Edit code", xóa code mẫu, dán toàn bộ nội dung file worker.js -> Deploy.
+3. Copy địa chỉ Worker (dạng https://wyckoff.<tên>.workers.dev).
+4. Trong ứng dụng trên iPhone: bấm "⚙ Cài đặt" -> dán địa chỉ -> Lưu -> "Kiểm tra". Thấy "Kết nối OK" là dùng được.
+(Gói miễn phí Cloudflare có hạn mức 100.000 lượt gọi/ngày. Chức năng "Lọc cổ phiếu" quét hàng trăm mã nên tốn nhiều lượt; nên lọc theo từng sàn.)
+
+LƯU Ý
+- Tab "Biểu đồ FireAnt" có thể không hiển thị trên iPhone (FireAnt chặn nhúng). Dùng tab "Biểu đồ Wyckoff"; nút "Mở FireAnt ngoài" mở FireAnt trong Safari.
+- Biểu đồ: kéo 1 ngón để di chuyển, 2 ngón để phóng to/thu nhỏ. "Lưu ảnh PNG" tải ảnh về iPhone.
+- Danh sách theo dõi (Lọc cổ phiếu) lưu trong Safari của iPhone, riêng với bản trên máy tính.
+- Khi mình cập nhật phần mềm, chỉ cần tải lại file index.html mới lên GitHub; ứng dụng tự cập nhật ở lần mở sau.
+- Công cụ tham khảo, không phải khuyến nghị đầu tư.
